@@ -1,0 +1,32 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "type": "lldb",
+      "request": "launch",
+      "name": "Debug",
+      "program": "${workspaceFolder}/debug.out",
+      "args": [
+        "a"
+      ],
+      "cwd": "${workspaceFolder}",
+      "stopOnEntry": true,
+      "env": {
+        "ASAN_OPTIONS": "detect_stack_use_after_return=1"
+      },
+      "sourceLanguages": [
+        "c"
+      ],
+      "internalConsoleOptions": "openOnSessionStart",
+      "preLaunchTask": "Build debug executable"
+    },
+    {
+      "name": "C/C++ Runner: Debug Session",
+      "type": "lldb",
+      "request": "launch",
+      "args": [],
+      "cwd": "/Users/ogoman/HIVE/Get_Next_Line",
+      "program": "/Users/ogoman/HIVE/Get_Next_Line/build/Debug/outDebug"
+    }
+  ]
+}
