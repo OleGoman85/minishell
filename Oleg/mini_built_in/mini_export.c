@@ -29,73 +29,7 @@
 //./a.out PATH
 // PATH=/Users/ogoman/.brew/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:/usr/local/munki:/Users/ogoman/.brew/bin
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <stdbool.h>
-#include "mini.h"
 
-// typedef struct s_builtin
-// {
-//     char    **all_env;
-//     char    *variable;
-//     int     envp_size;
-//     char    **new_envp;
-// }   t_builtin;
-
-int check_variable(t_builtin *built);
-void *ft_realloc(void *ptr, size_t old_size, size_t new_size);
-char **ft_all_env(t_builtin *built, char *envp[]);
-char **ft_new_envp(t_builtin *built);
-
-//funkcija kopirovanija peremennih okruzenija v massiv ukazatelej
-char **ft_all_env(t_builtin *built, char *envp[])
-{
-    int i;
-
-    built->envp_size = 0;
-    i = 0;
-    while (envp[built->envp_size] != NULL) //kolichestvo envp
-        built->envp_size++;
-    built->all_env = (char **)malloc((built->envp_size + 1) * sizeof(char *)); // pamjat dlja envp
-    if (built->all_env == NULL)
-        return (NULL);
-    while (i < built->envp_size) //stroki iz envp v all_env
-    {
-        built->all_env[i] = envp[i];
-        i++;
-    }
-    built->all_env[built->envp_size] = NULL;
-    return (built->all_env);
-}
-
-int main(int ac, char **av, char *envp[])
-{
-    (void)ac;
-    t_builtin built;
-
-    built.all_env = ft_all_env(&built, envp);
-    if (built.all_env == NULL)
-        return (1);
-    if (av[1] != NULL)
-    {
-        built.variable = av[1];
-        if (check_variable(&built))
-        {
-            built.new_envp = ft_new_envp(&built);
-            if (built.new_envp == NULL)
-            {
-                free (built.all_env);
-                return (1);
-            }
-            free(built.new_envp);
-        }
-        else
-            printf("Error: Invalid variable format\n");
-    }
-    else
-        printf("Error: No variable provided\n");
-    return (0);
-}
 
 void *ft_realloc(void *ptr, size_t old_size, size_t new_size)
 {
@@ -103,12 +37,12 @@ void *ft_realloc(void *ptr, size_t old_size, size_t new_size)
 	i = 0;
 	if (new_size <= old_size)
 	{
-		return ptr;
+		return (ptr);
 	}
 	void *new_ptr = malloc(new_size);
 	if (new_ptr == NULL)
 	{
-		return NULL;
+		return (NULL);
 	}
 
 	while (i < old_size)
@@ -119,51 +53,95 @@ void *ft_realloc(void *ptr, size_t old_size, size_t new_size)
 	free(ptr);
 	return (new_ptr);
 }
+// Эта функция изменяет размер блока памяти, на который указывает
+// ptr, с old_size на new_size. Она копирует данные из старой
+// области памяти в новую и возвращает указатель на новую область
+// памяти. Если выделение новой памяти не удалось, функция возвращает NULL.
 
-
-//proverka argv
-int check_variable(t_builtin *built)
+int check_variable(t_data *data)
 {
-    int i;
+    int i = 0;
 
-    i = 0;
-    while (built->variable[i] != '=' && built->variable[i] != '\0') // poka ne vstretitsja = ili \0
+    while (data->variable[i] != '=' && data->variable[i] != '\0') // Пока не встретим '=' или '\0'
     {
-        if (!((built->variable[i] >= 'A' && built->variable[i] <= 'Z') ||
-              (built->variable[i] >= 'a' && built->variable[i] <= 'z') ||
-              (built->variable[i] >= '0' && built->variable[i] <= '9') ||
-              (built->variable[i] == '_')))
+        if (!((data->variable[i] >= 'A' && data->variable[i] <= 'Z') ||
+              (data->variable[i] >= 'a' && data->variable[i] <= 'z') ||
+              (data->variable[i] >= '0' && data->variable[i] <= '9') ||
+              (data->variable[i] == '_')))
         {
             printf("Error: Characters must be Numbers, Letters or '_'\n");
-            return 0;
+            return (0);
         }
         i++;
     }
-    if (built->variable[i] == '\0') // konec stroki i net '='
+    if (data->variable[i] == '\0') // Конец строки и нет '='
     {
         printf("Error: '=' character is missing\n");
-        return 0;
+        return (0);
     }
-    // uspewnoe vipolnenie
-    return 1;
+    return 1; // Успешное выполнение
 }
 
-char **ft_new_envp(t_builtin *built)
+// Эта функция проверяет корректность формата переменной
+// (data->variable), которая должна содержать только буквы,
+// цифры или символ _, и обязательный символ =.
+
+char **ft_new_envp(t_data *data)
 {
     int j = 0;
-    size_t old_size = (built->envp_size + 1) * sizeof(char *);
-    size_t new_size = (built->envp_size + 2) * sizeof(char *); 
-    built->new_envp = ft_realloc(built->all_env, old_size, new_size);
-    if (built->new_envp == NULL)
-        return (NULL); //error
-    // Добавление новой переменной окружения в конец массива
-    built->new_envp[built->envp_size] = built->variable;
-    built->new_envp[built->envp_size + 1] = NULL; // Установка NULL в конце массива
-    built->envp_size++;
-    while (j < built->envp_size)
+    size_t old_size = (data->envp_size + 1) * sizeof(char *);
+    size_t new_size = (data->envp_size + 2) * sizeof(char *); 
+
+    data->new_envp = ft_realloc(data->new_envp, old_size, new_size);
+    if (data->new_envp == NULL)
+        return (NULL);
+
+    data->new_envp[data->envp_size] = data->variable;
+    data->new_envp[data->envp_size + 1] = NULL;
+    data->envp_size++;
+
+    while (j < data->envp_size)
     {
-        printf("%s\n", built->new_envp[j]);
+        printf("%s\n", data->new_envp[j]);
         j++;
     }
-    return(built->new_envp);
+    return (data->new_envp);
 }
+
+// Эта функция добавляет новую переменную окружения
+// (data->variable) в массив переменных окружения
+// (data->new_envp). Она использует ft_realloc для
+// увеличения памяти под data->new_envp, затем копирует
+// строку data->variable в новую область памяти. В случае
+// ошибки она выводит сообщение и освобождает память.
+
+int ft_export(t_data *data)
+{
+    if (ft_all_env(data) == NULL)
+        return (1);
+
+    if (data->av[1] != NULL)
+    {
+        data->variable = data->av[1];
+        if (check_variable(data))
+        {
+            if (ft_new_envp(data) == NULL)
+            {
+                free(data->new_envp);
+                return (1);
+            }
+            free(data->new_envp);
+        }
+        else
+            printf("Error: Invalid variable format\n");
+    }
+    else
+        printf("Error: No variable provided\n");
+    return (0);
+}
+
+// Эта функция добавляет новую переменную окружения,
+// указанную в аргументах командной строки (data->av[1]),
+// в массив переменных окружения (data->new_envp). Она проверяет формат
+// переменной с помощью check_variable(data) и выводит сообщения об
+// ошибках при необходимости.
