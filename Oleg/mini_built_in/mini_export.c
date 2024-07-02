@@ -34,16 +34,13 @@
 void *ft_realloc(void *ptr, size_t old_size, size_t new_size)
 {
 	size_t i;
+
 	i = 0;
 	if (new_size <= old_size)
-	{
 		return (ptr);
-	}
 	void *new_ptr = malloc(new_size);
 	if (new_ptr == NULL)
-	{
 		return (NULL);
-	}
 
 	while (i < old_size)
 	{
@@ -118,11 +115,11 @@ char **ft_new_envp(t_data *data)
 int ft_export(t_data *data)
 {
     if (ft_all_env(data) == NULL)
-        return (1);
+        return 1;
 
-    if (data->av[1] != NULL)
+    if (data->cmd_opt[data->cmd_index][1] != NULL)
     {
-        data->variable = data->av[1];
+        data->variable = data->cmd_opt[data->cmd_index][1];
         if (check_variable(data))
         {
             if (ft_new_envp(data) == NULL)

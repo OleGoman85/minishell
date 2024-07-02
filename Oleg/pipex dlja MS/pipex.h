@@ -6,7 +6,7 @@
 /*   By: ogoman <ogoman@student.hive.fi>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/21 14:31:10 by ogoman            #+#    #+#             */
-/*   Updated: 2024/06/03 11:55:27 by ogoman           ###   ########.fr       */
+/*   Updated: 2024/07/02 10:41:15 by ogoman           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -34,20 +34,22 @@ O_TRUNC (will overwrite if the file already exists), open(), close()
 
 typedef struct s_data
 {
-	pid_t	*pid;
-	char	**av;
-	char	**env; //envp
-	char	**path; // put k komande "/bin/ls" ili "/usr/bin/grep" (primer)
-	char	**cmd_opt; // komanda ls
-	int		**pipes_fd; //kolichestvo fd read/write
-	int		pipes_n; //kol-vo pipe (kol-vo komand - 1)
-	// int		file_in;
-	// int		file_out;
-    int     input_fd; //dlja faila (read)
-    int     output_fd; //dlja faila (write)
-	int		status; //dlja vivoda status zaverwenija
-    int     num_cmds; //kolichestvo komand
-}	t_data;
+    pid_t   *pid;        // Массив PID для дочерних процессов // eto dlja pipex nado budet
+    char    **av;        // Аргументы командной строки
+    char    **env;       // Массив переменных окружения (envp)
+    char    **path;      // Пути к командам, например, "/bin/ls" или "/usr/bin/grep"
+    char    ***cmd_opt;   // Опции команды, например, "ls", "-l"
+    int     **pipes_fd;  // Двумерный массив файловых дескрипторов для pipe (читает/пишет)
+    int     pipes_n;     // Количество pipe (равно количеству команд минус один)
+    int     input_fd;    // Файловый дескриптор для входного файла (чтение)
+    int     output_fd;   // Файловый дескриптор для выходного файла (запись)
+    int     status;      // Статус завершения команд
+    int     num_cmds;    // Количество команд
+    int     envp_size;   // Размер массива переменных окружения
+    char    *variable;   // Переменная для хранения аргументов export
+    char    **new_envp;  // Массив для обновленных переменных окружения
+    int     cmd_index    //индекс команды в массиве
+} t_data;
 
 
 ////////////////// minishel //////////
@@ -56,7 +58,8 @@ void create_pipes(t_data *data);
 void close_pipes_fd(t_data *data);
 void free_pipes(t_data *data);
 void main_errors(int error_code);
-void execute_command(char *path, char **args, char **envp, int input_fd, int output_fd);
+void execute_command(t_data *data, char **cmd, int input_fd, int output_fd);
+void exec_cmd(t_data *data, char **cmd);
 
 // int		px_strcmp(const char *s1, const char *s2);
 // int		px_strncmp(const char *s1, const char *s2, size_t n);

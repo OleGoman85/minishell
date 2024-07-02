@@ -6,7 +6,7 @@
 /*   By: ogoman <ogoman@student.hive.fi>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/27 10:50:53 by ogoman            #+#    #+#             */
-/*   Updated: 2024/06/03 11:51:43 by ogoman           ###   ########.fr       */
+/*   Updated: 2024/07/02 10:32:07 by ogoman           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,40 +33,41 @@
 ////////minishell/////////
 
 
-int main(int argc, char **argv)
+int pipex(t_data *data)
 {
-    int i;
-    t_data data;
-
-    i = 0;
-    create_pipes(&data);
-    while (i < data.num_cmds)
+    data->cmd_index = 0;
+    create_pipes(data);
+    while (data->cmd_index < data->num_cmds)
     {
-        data.pid[i] = fork();
-        handle_child_process(&data, i);
-        i++;
+        data->pid[data->cmd_index] = fork();
+        if (data->pid[data->cmd_index] < 0)
+        {
+            perror("fork failed");
+            exit(EXIT_FAILURE);
+        }
+        handle_child_process(data);
+        data->cmd_index++;
     }
     close_pipes_fd(&data);
     free_pipes(&data);
-    free(data.pid);
-
-    i = 0;
-    while(i < data.num_cmds)     // Ожидание завершения всех дочерних процессов
+    free(data->pid);
+    data->cmd_index = 0;
+    while(data->cmd_index < data->num_cmds)     // Ожидание завершения всех дочерних процессов
     {
-        waitpid(data.pid[i], &data.status, 0);
-        i++;
+        waitpid(data->pid[data->cmd_index], &data->status, 0);
+        data->cmd_index++;
     }
-    return WEXITSTATUS(data.status);
+    return (WEXITSTATUS(data->status));
 }
 
 // podfunkcija dlja obrabotki dochernih processov
-void handle_child_process(t_data *data, int i)
+void handle_child_process(t_data *data)
 {
-    if (data->pid[i] < 0)
+    if (data->pid[data->cmd_index] < 0)
         main_errors(2);
-    else if (data->pid[i] == 0)
+    else if (data->pid[data->cmd_index] == 0)
     {
-        execute_process(data, i);
+        execute_process(data);
         exit(EXIT_SUCCESS); // Добавлено завершение дочернего процесса
     }
 }

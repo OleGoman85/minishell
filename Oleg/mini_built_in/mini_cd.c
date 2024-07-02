@@ -49,27 +49,26 @@ int ft_cd(t_data *data)
     if (getcwd(buff, sizeof(buff)) == NULL)
     {
         printf("Get Current working directory failed. \n");
-        return (1);
+        return 1;
     }
-
-    printf("Before chdir: %s\n", buff); // eto skorej vsego liwnee
-
-    if (chdir(data->av[1]) == -1)
+    if (data->cmd_opt[cmd_index][1] == NULL)
+    {
+        printf("cd: missing operand\n");
+        return 1;
+    }
+    if (chdir(data->cmd_opt[data->cmd_index][1]) == -1)
     {
         perror("chdir current working directory failed.\n");
-        return (1);
+        return 1;
     }
-
     if (getcwd(buff, sizeof(buff)) != NULL)
         printf("After chdir: %s\n", buff);
     else
         perror("getcwd failed");
 
-    return (0);
+    return 0;
 }
-
-// Эта функция изменяет текущий рабочий каталог на тот, который 
-// указан в аргументах командной строки (data->av[1]). Она использует
+// Эта функция изменяет текущий рабочий каталог  Она использует
 //  функции getcwd() для получения текущего каталога до и после 
 //  изменения и chdir() для фатического изменения каталога. 
 //  В случае ошибок она выводит соответствующие сообщения.

@@ -112,7 +112,7 @@ char **ft_all_env(t_data *data)
     }
     while (i < data->envp_size) // Копирование строк из env в new_envp
     {
-        data->new_envp[i] = strdup(data->env[i]); // Дублирование строки, чтобы избежать проблем с изменением исходного env
+        data->new_envp[i] = ft_strdup(data->env[i]); // Дублирование строки, чтобы избежать проблем с изменением исходного env
         if (data->new_envp[i] == NULL) {
             perror("strdup");
             while (--i >= 0)
