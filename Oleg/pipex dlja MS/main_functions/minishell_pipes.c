@@ -6,7 +6,7 @@
 /*   By: ogoman <ogoman@student.hive.fi>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/03 11:47:25 by ogoman            #+#    #+#             */
-/*   Updated: 2024/06/26 10:20:43 by ogoman           ###   ########.fr       */
+/*   Updated: 2024/07/02 10:40:23 by ogoman           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,11 +28,16 @@ void close_pipes_fd(t_data *data)
         j++;
     }
     j = 0;
-    while (j <= data->pipes_n)
+    while (j < data->num_cmds)
     {
-        if (waitpid(data->pid[j], &status, 0) > 0)
-                data->status = WEXITSTATUS(status); // poluchenie statusa vihoda processa
-        else
+       if (waitpid(data->pid[j], &status, 0) > 0)
+        {
+            if (WIFEXITED(status))
+                data->status = WEXITSTATUS(status); // Получаем статус завершения процесса
+            else
+                data->status = EXIT_FAILURE; // Обработка нормального завершения процесса
+        }
+        else if (errno != ECHILD)
             perror("waitpid");
         j++;
     }
@@ -50,15 +55,6 @@ void free_pipes(t_data *data)
     free(data->pipes_fd);
 }
 
-void	close_pipes(t_data *data)
-{
-    int i = 0;
-    while ( i < 2 * (data->num_cmds - 1))
-    {
-        close(data->pipes_fd[i]);
-        i++;
-    }
-}
 // sozdanie pipes_fd
 void create_pipes(t_data *data)
 {
@@ -88,4 +84,5 @@ void create_pipes(t_data *data)
         i++;
     }
 }
+
 

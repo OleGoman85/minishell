@@ -3,44 +3,53 @@
 
 #include "mini.h"
 
-// sohranjaet envp v massiv
-char **ft_all_env(t_builtin *built, char *envp[])
+char **ft_all_env(t_data *data)
 {
     int i;
 
-    built->envp_size = 0;
     i = 0;
-    while (envp[built->envp_size] != NULL) //kolichestvo envp
-        built->envp_size++;
-    built->all_env = (char **)malloc((built->envp_size + 1) * sizeof(char *)); // pamjat dlja envp
-    if (built->all_env == NULL)
+    data->envp_size = 0;
+    while (data->env[data->envp_size] != NULL) // Подсчёт количества строк в envp
+        data->envp_size++;
+
+    data->new_envp = (char **)malloc((data->envp_size + 1) * sizeof(char *)); // Выделение памяти для new_envp
+    if (data->new_envp == NULL)
         return (NULL);
-    while (i < built->envp_size) //stroki iz envp v all_env
+
+    while (i < data->envp_size) // Копирование строк из env в new_envp
     {
-        built->all_env[i] = envp[i];
+        data->new_envp[i] = data->env[i];
         i++;
     }
-    built->all_env[built->envp_size] = NULL;
-    return (built->all_env);
+    data->new_envp[data->envp_size] = NULL;
+    return (data->new_envp);
 }
 
-// zapuskaet i vivodit envp
-int main (int ac, char **av, char *envp[])
-{
-    (void) ac;
-    (void) av;
-    int i;
-    t_builtin built;
+// Эта функция создает копию массива переменных окружения
+// (data->env) в новом массиве (data->new_envp).
+// Она вычисляет размер (envp_size) и выделяет достаточно
+// памяти для хранения указателей на строки окружения.
 
+
+int ft_env(t_data *data)
+{
+    int i;
+    
     i = 0;
-    built.all_env = ft_all_env(&built, envp);
-    if (built.all_env == NULL)
-        return (0);
-    while (i < built.envp_size)
+    if (ft_all_env(data) == NULL)
+        return (1);
+
+    while (i < data->envp_size)
     {
-        printf("%s\n", built.all_env[i]);
+        printf("%s\n", data->new_envp[i]);
         i++;
     }
-    free (built.all_env);
+    free(data->new_envp); // Освобождение выделенной памяти
+
     return (0);
 }
+
+// Эта функция выводит все строки из массива переменных окружения
+// (data->new_envp). Если ft_all_env(data) вернет NULL,
+// функция вернет 1. После вывода она освобождает память,
+// выделенную под data->new_envp.
