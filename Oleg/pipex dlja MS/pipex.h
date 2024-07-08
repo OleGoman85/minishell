@@ -6,7 +6,7 @@
 /*   By: ogoman <ogoman@student.hive.fi>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/02/21 14:31:10 by ogoman            #+#    #+#             */
-/*   Updated: 2024/07/02 10:41:15 by ogoman           ###   ########.fr       */
+/*   Updated: 2024/07/04 12:25:52 by ogoman           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -34,11 +34,11 @@ O_TRUNC (will overwrite if the file already exists), open(), close()
 
 typedef struct s_data
 {
-    pid_t   *pid;        // Массив PID для дочерних процессов // eto dlja pipex nado budet
+    pid_t   *pid;        // Массив PID для дочерних процессов
     char    **av;        // Аргументы командной строки
     char    **env;       // Массив переменных окружения (envp)
     char    **path;      // Пути к командам, например, "/bin/ls" или "/usr/bin/grep"
-    char    ***cmd_opt;   // Опции команды, например, "ls", "-l"
+    char    ***cmd_opt;  // Опции команды, например, "ls", "-l"
     int     **pipes_fd;  // Двумерный массив файловых дескрипторов для pipe (читает/пишет)
     int     pipes_n;     // Количество pipe (равно количеству команд минус один)
     int     input_fd;    // Файловый дескриптор для входного файла (чтение)
@@ -48,7 +48,10 @@ typedef struct s_data
     int     envp_size;   // Размер массива переменных окружения
     char    *variable;   // Переменная для хранения аргументов export
     char    **new_envp;  // Массив для обновленных переменных окружения
-    int     cmd_index    //индекс команды в массиве
+    int     cmd_index;   // Индекс команды в массиве
+    char    *limiter;    // Строка, содержащая limiter для heredoc (heredoc)
+    int     here_doc;    // Флаг для определения, используется ли heredoc (heredoc)
+    char    *symbol;     // Символ для определения типа редиректа(heredoc)
 } t_data;
 
 
