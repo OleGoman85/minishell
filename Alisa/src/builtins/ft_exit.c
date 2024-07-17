@@ -1,12 +1,10 @@
 
 #include "minishell.h"
 
-
-
-int	ft_exit(t_cmd *cmd, t_shell *sh)
+int	ft_exit(t_cmd *cmd, t_shell *shell)
 {
 	(void)cmd;
-	(void)sh;
-	clean_exit(sh->prev_cmd_status, sh);
+	(void)shell;
+	clean_exit(shell->prev_cmd_status, shell);
 	return (EXIT_SUCCESS);
 }

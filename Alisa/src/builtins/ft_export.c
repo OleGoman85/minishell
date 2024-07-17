@@ -38,7 +38,7 @@ static void	process_export(char *ev_str, bool *has_invalid_name, t_shell *shell)
 	ev_name = extract_var_name(ev_str, equals_pos, append_mode, shell);
 	if (!check_var_name(ev_name))
 	{
-		error_msg("export: `", ev_str, "': not a valid name", shell);
+		error_msg("export: `", ev_str, "': not a valid identifier", shell);
 		*has_invalid_name = true;
 		return ;
 	}
