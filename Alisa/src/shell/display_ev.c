@@ -11,19 +11,19 @@ int	display_ev_list(bool export_mode, t_list *ev, t_shell *shell)
 			continue ;
 		}
 		if (export_mode)
-			write_ext("declare -x ", STDOUT_FILENO, shell);
-		write_ext(get_ev_name(ev), STDOUT_FILENO, shell);
+			write_and_track("declare -x ", STDOUT_FILENO, shell);
+		write_and_track(get_ev_name(ev), STDOUT_FILENO, shell);
 		if (get_ev_value(ev))
-			write_ext("=", STDOUT_FILENO, shell);
+			write_and_track("=", STDOUT_FILENO, shell);
 		if (export_mode && get_ev_value(ev))
 		{
-			write_ext("\"", STDOUT_FILENO, shell);
-			write_ext(get_ev_value(ev), STDOUT_FILENO, shell);
-			write_ext("\"", STDOUT_FILENO, shell);
+			write_and_track("\"", STDOUT_FILENO, shell);
+			write_and_track(get_ev_value(ev), STDOUT_FILENO, shell);
+			write_and_track("\"", STDOUT_FILENO, shell);
 		}
 		else if (get_ev_value(ev))
-			write_ext(get_ev_value(ev), STDOUT_FILENO, shell);
-		write_ext("\n", STDOUT_FILENO, shell);
+			write_and_track(get_ev_value(ev), STDOUT_FILENO, shell);
+		write_and_track("\n", STDOUT_FILENO, shell);
 		ev = ev->next;
 	}
 	return (EXIT_SUCCESS);

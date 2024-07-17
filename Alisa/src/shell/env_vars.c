@@ -85,3 +85,18 @@ char	*get_ev_value(t_list *ev_node)
 		return (NULL);
 	return (((t_env_var *)(ev_node->content))->value);
 }
+
+void	free_ev(void *data) // to ev utils
+{
+	t_env_var *ev;
+
+	if (data != NULL)
+	{
+		ev = (t_env_var *)data;
+		if (ev->name != NULL)
+			free(ev->name);
+		if (ev->value != NULL)
+			free(ev->value);
+		free(ev);
+	}
+}
