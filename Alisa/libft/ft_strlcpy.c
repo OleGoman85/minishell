@@ -6,9 +6,10 @@
 /*   By: aarbenin <aarbenin@student.hive.fi>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/06 09:22:07 by aarbenin          #+#    #+#             */
-/*   Updated: 2023/11/06 09:22:11 by aarbenin         ###   ########.fr       */
+/*   Updated: 2024/07/17 09:30:26 by aarbenin         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
+
 #include "libft.h"
 
 size_t	ft_strlcpy(char *dst, const char *src, size_t dstsize)

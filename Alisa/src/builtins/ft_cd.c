@@ -26,8 +26,8 @@ static int	update_env_vars(char **current_pwd, char *oldpwd_val,
 	{
 		if (errno == ENOENT)
 		{
-			error_msg("cd: unable to retrieve current directory: ",
-				"getcwd: no access to directories", strerror(errno), shell);
+			error_msg("cd: error retrieving current directory: ",
+				"getcwd: cannot access parent directories: ", strerror(errno), shell);
 			change_ev_val(get_ev("PWD", shell->ev_list), "/.", true, shell);
 		}
 		else
@@ -101,7 +101,7 @@ int	ft_cd(t_cmd *cmd, t_shell *shell)
 
 	current_pwd = NULL;
 	if (cmd->cmd_args[1] != NULL && cmd->cmd_args[2] != NULL)
-		return (error_msg("cd: ", NULL, "too many parameters passed", shell));
+		return (error_msg("cd: ", NULL, "too many arguments", shell));
 	if (process_cd_args(cmd, &current_pwd, shell) != EXIT_SUCCESS)
 		return (EXIT_FAILURE);
 	if (chdir(current_pwd) == -1)

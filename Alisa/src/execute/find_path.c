@@ -58,13 +58,13 @@ char	*find_executable_path(char *cmd, t_shell *shell)
 			if (errno == EACCES)
 				exit_on_error("access denied", cmd, 126, shell);
 			else if (errno == ENOENT)
-				exit_on_error("file not found", cmd, 127, shell);
+				exit_on_error("No such file or directory", cmd, 127, shell);
 			else
 				exit_on_sys_error(cmd, errno, shell);
 		}
 		get_file_status(cmd, &file_info, shell);
 		if (S_ISDIR(file_info.st_mode))
-			exit_on_error("is directory", cmd, 126, shell);
+			exit_on_error("Is a directory", cmd, 126, shell);
 		return (cmd);
 	}
 	else if (ft_strncmp(cmd, ".", 1) == 0 || ft_strncmp(cmd, "..", 2) == 0)
