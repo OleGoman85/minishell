@@ -62,7 +62,7 @@ char	*strdup_tracked(char const *str, t_mem_trackers tracker, t_shell *shell)
 	return (manage_memory(dup, tracker, shell));
 }
 
-ssize_t	write_ext(const char *str, int fd, t_shell *shell)
+ssize_t	write_and_track(const char *str, int fd, t_shell *shell)
 {
 	ssize_t	result;
 
@@ -109,17 +109,17 @@ void	alloc_check(t_list *node, void *mem_ptr, t_shell *shell)
 void	del_node(t_list **target, t_list **lst_head,
 		void (*free_data)(void *), bool should_free)
 {
-	t_list	*deleting;
+	t_list	*current;
 
 	if (!target || !*target || !lst_head)
 		return ;
-	deleting = *target;
-	if (deleting->prev)
-		deleting->prev->next = deleting->next;
+	current = *target;
+	if (current->prev)
+		current->prev->next = current->next;
 	else
-		*lst_head = deleting->next;
-	if (deleting->next)
-		deleting->next->prev = deleting->prev;
+		*lst_head = current->next;
+	if (current->next)
+		current->next->prev = current->prev;
 	if (should_free)
-		ft_lstdelone(deleting, free_data);
+		ft_lstdelone(current, free_data);
 }

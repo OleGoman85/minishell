@@ -183,9 +183,9 @@ int	process_input(char *input_str, t_shell *shell)
 	result = parse_tokens(tokens, &parse_tree, shell);
 	if (result != EXIT_SUCCESS || parse_tree == NULL)
 		return (result);
-	result = process_hdoc(parse_tree, shell);
-	if (result != EXIT_SUCCESS)
-		return (result);
+	// result = process_hdoc(parse_tree, shell);
+	// if (result != EXIT_SUCCESS)
+	// 	return (result);
 	result = run_cmd(parse_tree, OP_COMPLETE, shell);
 	return (result);
 }

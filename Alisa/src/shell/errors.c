@@ -23,19 +23,19 @@ void	exit_on_sys_error(const char *cause, int errnum, t_shell *shell)
 
 int	error_msg_errno(char *cause, t_shell *shell)
 {
-	write_ext("minishell: ", STDERR_FILENO, shell);
+	write_and_track("minishell: ", STDERR_FILENO, shell);
 	perror(cause);
 	return (EXIT_FAILURE);
 }
 
 int	error_msg(char *cause, char *faulty_el, char *msg, t_shell *shell)
 {
-	write_ext("minishell: ", STDERR_FILENO, shell);
-	write_ext(cause, STDERR_FILENO, shell);
+	write_and_track("minishell: ", STDERR_FILENO, shell);
+	write_and_track(cause, STDERR_FILENO, shell);
 	if (faulty_el)
-		write_ext(faulty_el, STDERR_FILENO, shell);
-	write_ext(msg, STDERR_FILENO, shell);
-	write_ext("\n", STDERR_FILENO, shell);
+		write_and_track(faulty_el, STDERR_FILENO, shell);
+	write_and_track(msg, STDERR_FILENO, shell);
+	write_and_track("\n", STDERR_FILENO, shell);
 	return (EXIT_FAILURE);
 }
 
