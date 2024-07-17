@@ -6,12 +6,15 @@
 /*   By: ogoman <ogoman@student.hive.fi>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/06/03 11:50:25 by ogoman            #+#    #+#             */
-/*   Updated: 2024/06/03 11:55:58 by ogoman           ###   ########.fr       */
+/*   Updated: 2024/07/02 10:32:53 by ogoman           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../pipex.h"
 
+//vipolnenie komand
+
+// podfunkcija dlja zakritija fajlovih deskriptorov pipe
 //vipolnenie komand
 
 // podfunkcija dlja zakritija fajlovih deskriptorov pipe
@@ -35,34 +38,31 @@ void close_unused_fds(t_data *data, int i)
     }
 }
 // podfunkcija dlja vipolnenija komand
-void execute_process(t_data *data, int i)
+void execute_process(t_data *data)
 {
-    close_unused_fds(data, i);
-    if (i == 0)
-        execute_command(data->cmd_opt[i], (char *[]){data->cmd_opt[i], NULL},
-            data->env, -1, data->pipes_fd[0][1]);
-    else if (i == data->num_cmds - 1)
-        execute_command(data->cmd_opt[i], (char *[]){data->cmd_opt[i], NULL},
-            data->env, data->pipes_fd[i - 1][0], -1);
+    close_unused_fds(data, data->cmd_index);
+    if (data->cmd_index == 0)
+        execute_command(data, data->cmd_opt[data->cmd_index], -1, data->pipes_fd[0][1]);
+    else if (data->cmd_index == data->num_cmds - 1)
+        execute_command(data, data->cmd_opt[data->cmd_index], data->pipes_fd[data->cmd_index - 1][0], -1);
     else
-        execute_command(data->cmd_opt[i], (char *[]){data->cmd_opt[i], NULL},
-            data->env, data->pipes_fd[i - 1][0], data->pipes_fd[i][1]);
+        execute_command(data, data->cmd_opt[data->cmd_index], data->pipes_fd[data->cmd_index - 1][0], data->pipes_fd[data->cmd_index][1]);
 }
 
+
 // funkcija dlja vipolnenija komandy v dochernem processe
-void execute_command(char *path, char **args, char **envp, int input_fd, int output_fd)
+void execute_command(t_data *data, char **cmd, int input_fd, int output_fd)
 {
     if (input_fd != -1)
     {
-        dup2(input_fd, STDIN_FILENO); //podmena standartnogo vvoda
+        dup2(input_fd, STDIN_FILENO); // Подмена стандартного ввода
         close(input_fd);
     }
     if (output_fd != -1)
     {
-        dup2(output_fd, STDOUT_FILENO); //podmena standartnogo vivoda
+        dup2(output_fd, STDOUT_FILENO); // Подмена стандартного вывода
         close(output_fd);
     }
-    execve(path, args, envp); //zapusk komandi
-    perror("execvp failed");
-    exit(1);
+    exec_cmd(data, cmd);
+    exit(EXIT_FAILURE); // Завершаем дочерний процесс, если произошла ошибка
 }
