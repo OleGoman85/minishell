@@ -67,7 +67,6 @@ static int	handle_exit_errors(int error_code, char *arg, t_shell *shell)
 		return (error_msg("exit: ", arg, ": numeric argument required", shell));
 	return (EXIT_FAILURE);
 }
-
 /**
  * @brief Разбирает аргументы команды exit и определяет статус выхода.
  *
@@ -75,7 +74,8 @@ static int	handle_exit_errors(int error_code, char *arg, t_shell *shell)
  * Она проверяет допустимость аргументов, конвертирует числовой аргумент
  * в тип `long long`, проверяет наличие ошибок и нормализует статус выхода
  * в диапазоне от 0 до 255. В случае ошибок возвращает соответствующие
- * коды ошибок и сообщения.
+ * коды ошибок и сообщения. Если первым аргументом является `--`,
+ * функция игнорирует его и завершает выполнение без ошибок.
  *
  * @param cmd Указатель на структуру `t_cmd`, содержащую команду и её аргументы.
  * @param num Указатель на переменную типа `long long`, в которую будет сохранён
@@ -87,6 +87,7 @@ static int	handle_exit_errors(int error_code, char *arg, t_shell *shell)
  *         Возвращает 255,
 	если аргумент не является допустимой числовой строкой.
  *         Возвращает 1, если передано слишком много аргументов.
+ *         Возвращает 0, если аргумент `--` и больше нет аргументов.
  */
 static int	parse_exit_arguments(t_cmd *cmd, long long *num, t_shell *shell)
 {
@@ -96,6 +97,12 @@ static int	parse_exit_arguments(t_cmd *cmd, long long *num, t_shell *shell)
 	*num = 0;
 	if (!cmd->cmd_args[1])
 		return (0);
+	if (ft_strcmp(cmd->cmd_args[1], "--") == 0)
+	{
+		if (cmd->cmd_args[2])
+			return (handle_exit_errors(1, NULL, shell), 1);
+		return (0);
+	}
 	arg = skip_whitespace_and_sign(cmd->cmd_args[1], &sign);
 	if (*arg == '\0' || !ft_isdigit_str(arg))
 		return (handle_exit_errors(2, cmd->cmd_args[1], shell), 255);
