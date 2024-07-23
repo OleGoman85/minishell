@@ -56,7 +56,7 @@ char	*find_executable_path(char *cmd, t_shell *shell)
 		if (access(cmd, X_OK) == -1)
 		{
 			if (errno == EACCES)
-				exit_on_error("access denied", cmd, 126, shell);
+				exit_on_error("Permission denied", cmd, 126, shell);
 			else if (errno == ENOENT)
 				exit_on_error("No such file or directory", cmd, 127, shell);
 			else
@@ -109,7 +109,7 @@ char	*locate_executable(char *bin_name, t_shell *sh)
 			exit_on_sys_error("error accessing path", errno, sh);
 	}
 	if (access_error)
-		exit_on_error("access denied", bin_name, 126, sh);
+		exit_on_error("Permission denied", bin_name, 126, sh);
 	exit_on_error("command not found", bin_name, 127, sh);
 	return (NULL);
 }
