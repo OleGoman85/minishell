@@ -17,6 +17,7 @@
 # include <termios.h>
 # include <sys/ioctl.h>
 # include <limits.h>
+# include <linux/limits.h>
 
 
 # include "libft.h"
@@ -298,6 +299,9 @@ t_tkn_type get_type(t_list *tkn_node);
 t_ast *parse_cmd(t_list **tokens, t_shell *shell);
 t_ast *parse_brace(t_list **tokens, t_shell *shell);
 int parse_tokens(t_list *tokens, t_ast **syntax_tree, t_shell *shell);
+t_ast	*parse_pipe(t_list **tkn_list, t_shell *shell);
+t_ast	*parse_logic(t_list **tkn_list, t_shell *shell);
+
 
 t_ast *link_redir_to_cmd(t_ast *redir_sequence, t_ast *cmd);
 t_ast *assemble_cmd(t_ast *redir_prefix, t_ast *redir_suffix, t_ast *cmd);
@@ -345,9 +349,6 @@ int open_file(const char *path, int mode_flags, mode_t permissions, t_shell *she
 int close_file(int fd, t_shell *shell);
 int get_file_status(const char *restrict file_path, struct stat *restrict file_stat, t_shell *shell);
 int duplicate_fd(int source_fd, int target_fd, t_shell *shell);
-
-
-
 
 
 

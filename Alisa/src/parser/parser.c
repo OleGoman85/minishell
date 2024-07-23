@@ -145,92 +145,100 @@ t_ast	*parse_cmd(t_list **tokens, t_shell *shell)
 }
 
 
-
-// t_ast	*parse_logic(t_list **tkn, t_shell *shell)
-// {
-// 	t_ast		*first_expr;
-// 	t_ast		*second_expr;
-// 	t_tkn_type	op_type;
-
-// 	first_expr = parse_pipe(tkn, shell);
-// 	while (in_tkn_list(tkn, 2, T_AND, T_OR))
-// 	{
-// 		op_type = get_type(*tkn);
-// 		*tkn = (*tkn)->next;
-// 		second_expr = parse_pipe(tkn, shell);
-// 		first_expr = build_node_logic(first_expr, op_type, second_expr, shell);
-// 	}
-// 	return (first_expr);
-// }
-
-// t_ast	*parse_pipe(t_list **tkn, t_shell *shell)
-// {
-// 	t_ast	*input_side;
-// 	t_ast	*output_side;
-
-// 	input_side = process_redir(tkn, shell);
-// 	while (*tkn && get_type(*tkn) == T_PIPE)
-// 	{
-// 		*tkn = (*tkn)->next;
-// 		output_side = process_redir(tkn, shell);
-// 		input_side = build_node_pipe(input_side, output_side, shell);
-// 	}
-// 	return (input_side);
-// }
-
-/** parse_logic_and_pipe
- * @brief Разбирает токены для логических операторов (&&, ||) и пайпов (|).
+/**
+ * @brief Парсит логические выражения и строит соответствующее дерево AST.
  *
- * Эта функция рекурсивно разбирает токены,
-	представляющие логические операторы и пайпы.
- * Сначала она разбирает левую часть выражения, вызывая `process_redir`,
-	которая обрабатывает перенаправления.
- * Затем она проверяет, является ли текущий токен логическим оператором (T_AND,
-	T_OR) или пайпом (T_PIPE).
- * Если да, то она получает тип оператора и переходит к следующему токену.
- * Затем она разбирает правую часть выражения.
+ * Функция parse_logic выполняет разбор логических операторов (&& и ||) в 
+ * команде и строит дерево AST, которое представляет 
+ * собой логическую структуру команды. Она рекурсивно разбирает выражения 
+ * с логическими операторами и соединяет их в дерево.
  *
- * Если левая или правая часть выражения равны null,
-	функция фиксирует синтаксическую ошибку и возвращает null.
- * В противном случае она создает узел AST,
-	представляющий либо логическую операцию, либо пайп, и устанавливает
-
-	* левые и правые выражения в качестве дочерних узлов. Этот процесс повторяется до тех пор,
-	пока в списке токенов
- * не останется логических операторов или пайпов.
+ * @param tkn_list Указатель на список токенов, представляющих команду.
+ * @param shell Указатель на структуру shell, содержащую информацию о состоянии оболочки.
+ * 
+ * @return Указатель на корень AST, представляющий логическое выражение.
  *
- * @param tokens Указатель на список токенов.
- * @param shell Указатель на структуру shell,
-	содержащую переменные окружения и настройки.
- * @return t_ast* Указатель на корень построенного AST,
-	представляющего разобранные логические операции и пайпы.
- * Возвращает null в случае синтаксической ошибки.
+ * Функция выполняет следующие шаги:
+ * 1. Парсит первое подвыражение с помощью функции parse_pipe и сохраняет его в first_expr.
+ * 2. В цикле проверяет, есть ли еще токены для разбора и являются ли они логическими операторами (&& или ||).
+ * 3. Если текущий токен является логическим оператором, сохраняет его тип в operator_type и переходит к следующему токену.
+ * 4. Парсит второе подвыражение с помощью функции parse_pipe и сохраняет его в second_expr.
+ * 5. Если второе подвыражение не удалось распарсить, возвращает первое подвыражение.
+ * 6. Создает новый узел логического оператора с помощью функции build_node_logic, передавая в нее первое подвыражение, тип оператора и второе подвыражение.
+ * 7. Если создание узла не удалось, возвращает первое подвыражение.
+ * 8. Обновляет first_expr на новый логический узел и продолжает цикл.
+ * 9. Возвращает корень дерева AST, представляющий логическое выражение.
  */
-static t_ast	*parse_logic_and_pipe(t_list **tokens, t_shell *shell)
+t_ast	*parse_logic(t_list **tkn_list, t_shell *shell)
 {
-	t_ast		*first_expr;
-	t_ast		*second_expr;
+	t_ast		*first_expr; //left expression
+	t_ast		*second_expr; //right expression
+	t_ast		*logical_expr;
 	t_tkn_type	operator_type;
 
-	first_expr = process_redir(tokens, shell);
-	while (tokens && *tokens && (get_type(*tokens) == T_AND
-			|| get_type(*tokens) == T_OR || get_type(*tokens) == T_PIPE))
+	first_expr = parse_pipe(tkn_list, shell);
+	while (tkn_list && *tkn_list)
 	{
-		operator_type = get_type(*tokens);
-		*tokens = (*tokens)->next;
-		second_expr = process_redir(tokens, shell);
-		if (!first_expr || !second_expr)
-		{
-			record_synt_err(get_tkn_label(operator_type), shell);
-			return (NULL);
-		}
-		if (operator_type == T_PIPE)
-			first_expr = build_node_pipe(first_expr, second_expr, shell);
-		else
-			first_expr = build_node_logic(first_expr, operator_type,
-					second_expr, shell);
+		operator_type = get_type(*tkn_list);
+		if (operator_type != T_AND && operator_type != T_OR)
+			break ;
+		*tkn_list = (*tkn_list)->next;
+		second_expr = parse_pipe(tkn_list, shell);
+		if (!second_expr)
+			return (first_expr);
+		logical_expr = build_node_logic(first_expr, operator_type, second_expr,
+				shell);
+		if (!logical_expr)
+			return (first_expr);
+		first_expr = logical_expr;
 	}
 	return (first_expr);
+}
+/**
+ * @brief Парсит команды с пайпами и строит соответствующее дерево AST.
+ *
+ * Функция parse_pipe выполняет разбор операторов пайпа (|) в команде и строит 
+ * дерево AST (Abstract Syntax Tree), которое представляет собой цепочку команд, 
+ * соединенных через пайпы. Она рекурсивно разбирает команды с пайпами и 
+ * соединяет их в дерево.
+ *
+ * @param tkn_list Указатель на список токенов, представляющих команду.
+ * @param shell Указатель на структуру shell, содержащую информацию о состоянии оболочки.
+ * 
+ * @return Указатель на корень AST, представляющий цепочку команд с пайпами.
+ *
+ * Функция выполняет следующие шаги:
+ * 1. Парсит первое подвыражение с редиректами с помощью функции process_redir и сохраняет его в input_side.
+ * 2. В цикле проверяет, есть ли еще токены для разбора и являются ли они оператором пайпа (|).
+ * 3. Если текущий токен является оператором пайпа, переходит к следующему токену.
+ * 4. Парсит второе подвыражение с редиректами с помощью функции process_redir и сохраняет его в output_side.
+ * 5. Если второе подвыражение не удалось распарсить, возвращает первое подвыражение.
+ * 6. Создает новый узел пайпа с помощью функции build_node_pipe, передавая в нее первое и второе подвыражения.
+ * 7. Если создание узла не удалось, возвращает первое подвыражение.
+ * 8. Обновляет input_side на новый узел пайпа и продолжает цикл.
+ * 9. Возвращает корень дерева AST, представляющий цепочку команд с пайпами.
+ */
+t_ast	*parse_pipe(t_list **tkn_list, t_shell *shell)
+{
+	t_ast	*input_side; //left expression
+	t_ast	*output_side; //right expression
+	t_ast	*pipeline_expr;
+
+	input_side = process_redir(tkn_list, shell);
+	while (tkn_list && *tkn_list)
+	{
+		if (get_type(*tkn_list) != T_PIPE)
+			break ;
+		*tkn_list = (*tkn_list)->next;
+		output_side = process_redir(tkn_list, shell);
+		if (!output_side)
+			return (input_side);
+		pipeline_expr = build_node_pipe(input_side, output_side, shell);
+		if (!pipeline_expr)
+			return (input_side);
+		input_side = pipeline_expr;
+	}
+	return (input_side);
 }
 
 /** parse_brace
@@ -260,7 +268,7 @@ t_ast	*parse_brace(t_list **tokens, t_shell *shell)
 	if (cur_tkn && get_type(cur_tkn) == T_BRACE_START)
 	{
 		cur_tkn = cur_tkn->next;
-		inner_expr = parse_logic_and_pipe(&cur_tkn, shell);
+		inner_expr = parse_logic(&cur_tkn, shell);
 		if (!cur_tkn)
 			return (record_synt_err("\\n", shell));
 		if (get_type(cur_tkn) == T_BRACE_END)
@@ -303,7 +311,7 @@ int	parse_tokens(t_list *tokens, t_ast **syntax_tree, t_shell *shell)
 	char	*invalid_token;
 	int		parse_result;
 
-	*syntax_tree = parse_logic_and_pipe(&tokens, shell);
+	*syntax_tree = parse_logic(&tokens, shell);
 	if (tokens)
 	{
 		invalid_token = get_value(tokens);
