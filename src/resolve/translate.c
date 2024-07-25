@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   translate.c                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: ogoman <ogoman@student.hive.fi>            +#+  +:+       +#+        */
+/*   By: aarbenin <aarbenin@student.hive.fi>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/24 09:03:03 by ogoman            #+#    #+#             */
-/*   Updated: 2024/07/24 09:15:18 by ogoman           ###   ########.fr       */
+/*   Updated: 2024/07/25 09:58:36 by aarbenin         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -554,3 +554,4 @@ t_list	*clean_file_list(t_list *file_list, t_subst_context *context)
 	}
 	return (file_list);
 }
+
