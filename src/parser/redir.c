@@ -1,40 +1,56 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   redir.c                                            :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: ogoman <ogoman@student.hive.fi>            +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2024/07/24 08:24:48 by ogoman            #+#    #+#             */
+/*   Updated: 2024/07/24 08:29:31 by ogoman           ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
 
 #include "minishell.h"
 
-/** link_redir_to_cmd
- * @brief Присоединяет команду к последовательности редиректов.
+/**
+ * @brief Links a command to a sequence of redirections.
  *
-
-	* Функция `link_redir_to_cmd` принимает последовательность редиректов `redir_sequence`
- * и команду `cmd`. Она находит последний редирект в последовательности и
- * устанавливает его командой `cmd`.
+ * The `link_redir_to_cmd` function takes a sequence of redirections 
+ * `redir_sequence`
+ * and a command `cmd`. It finds the last redirection in the sequence 
+ * and attaches
+ * it to the command `cmd`.
  *
- * @param redir_sequence Указатель на AST узел,
-	представляющий последовательность редиректов.
- * @param cmd Указатель на AST узел команды.
- * @return Указатель на AST узел обновленной последовательности редиректов.
+ * @param redir_sequence Pointer to the AST node representing the sequence 
+ * of redirections.
+ * @param cmd Pointer to the AST node representing the command.
+ * @return Pointer to the updated AST node of the redirection sequence.
  */
+
 t_ast	*link_redir_to_cmd(t_ast *redir_sequence, t_ast *cmd)
 {
 	t_ast	*redir_tail;
 
 	redir_tail = find_redir_tail(redir_sequence);
-	redir_tail->node_content.redir.command = cmd;
+	redir_tail->u_node_cont.redir.command = cmd;
 	return (redir_sequence);
 }
 
-/** assemble_cmd
- * @brief Собирает команду с префиксом и суффиксом редиректов.
+/**
+ * @brief Assembles a command with redirection prefixes and suffixes.
  *
- * Функция `assemble_cmd` принимает префикс редиректов `redir_prefix`,
- * суффикс редиректов `redir_suffix` и команду `cmd`. Она соединяет все части
- * так, чтобы командная цепочка была последовательной и корректной.
+ * The `assemble_cmd` function takes a redirection prefix `redir_prefix`,
+ * a redirection suffix `redir_suffix`, and a command `cmd`. It combines 
+ * all parts
+ * to ensure the command sequence is coherent and correct.
  *
- * @param redir_prefix Указатель на AST узел, представляющий префикс редиректов.
- * @param redir_suffix Указатель на AST узел, представляющий суффикс редиректов.
- * @param cmd Указатель на AST узел команды.
- * @return Указатель на AST узел,
-	представляющий собранную команду с редиректами.
+ * @param redir_prefix Pointer to the AST node representing the redirection 
+ * prefix.
+ * @param redir_suffix Pointer to the AST node representing the redirection 
+ * suffix.
+ * @param cmd Pointer to the AST node representing the command.
+ * @return Pointer to the AST node representing the assembled command with 
+ * redirections.
  */
 t_ast	*assemble_cmd(t_ast *redir_prefix, t_ast *redir_suffix, t_ast *cmd)
 {
@@ -54,19 +70,21 @@ t_ast	*assemble_cmd(t_ast *redir_prefix, t_ast *redir_suffix, t_ast *cmd)
 }
 
 /**
- * find_redir_tail
- * @brief Находит и возвращает последний узел редиректа в цепочке редиректов.
+ * @brief Finds and returns the last redirection node in a redirection chain.
  *
- * Функция принимает указатель на первый узел цепочки редиректов (redir_head)
- * и проходит по цепочке,
-	пока не достигнет последнего узла редиректа. Узлы редиректа
- * определяются по типу `REDIR`, а конец цепочки определяется по отсутствию
- * команды редиректа или по наличию команды, которая не является редиректом.
+ * The function takes a pointer to the first node of a redirection chain
+ * (`redir_head`)
+ * and traverses the chain until it reaches the last redirection node. 
+ * Redirection nodes
+ * are identified by their type `REDIR`, and the end of the chain is 
+ * determined either
+ * by the absence of a redirection command or by encountering a command 
+ * that is not a redirection.
  *
- * @param redir_head Указатель на первый узел цепочки редиректов.
-
-	* @return Указатель на последний узел редиректа в цепочке или на последний узел,
- *         который не является редиректом, если цепочка заканчивается командой.
+ * @param redir_head Pointer to the first node in the redirection chain.
+ * @return Pointer to the last redirection node in the chain, or the last node 
+ * that is not a redirection,
+ *         if the chain ends with a command.
  */
 t_ast	*find_redir_tail(t_ast *redir_head)
 {
@@ -77,32 +95,37 @@ t_ast	*find_redir_tail(t_ast *redir_head)
 	{
 		if (current_node->node_type != REDIR)
 			break ;
-		if (current_node->node_content.redir.command == NULL)
+		if (current_node->u_node_cont.redir.command == NULL)
 			break ;
-		if (current_node->node_content.redir.command->node_type != REDIR)
+		if (current_node->u_node_cont.redir.command->node_type != REDIR)
 			break ;
-		current_node = current_node->node_content.redir.command;
+		current_node = current_node->u_node_cont.redir.command;
 	}
 	return (current_node);
 }
 
 /**
- * @brief Обрабатывает редиректы и создает AST (Abstract Syntax Tree) узел команды с редиректами.
+ * @brief Processes redirections and creates an AST node for the command 
+ * with redirections.
  *
- * Функция `process_redir` выполняет следующие шаги:
- * 1. Извлекает редиректы, предшествующие команде (`initial_redir`).
- * 2. Если обнаружена синтаксическая ошибка, возвращает `NULL`.
- * 3. Парсит команду, обернутую в скобки, с использованием `parse_brace`.
- * 4. Если команда не найдена или обнаружена синтаксическая ошибка, возвращает `initial_redir`.
- * 5. Извлекает редиректы, следующие за командой (`end_redir`).
- * 6. Если обнаружена синтаксическая ошибка, возвращает `initial_redir`.
- * 7. Если есть последующие редиректы, объединяет их с командой и возвращает.
- * 8. Если есть только начальные редиректы, объединяет их с командой и возвращает.
- * 9. Если редиректов нет, возвращает узел команды.
+ * The `process_redir` function performs the following steps:
+ * 1. Extracts the redirections preceding the command (`initial_redir`).
+ * 2. If a syntax error is detected, returns `NULL`.
+ * 3. Parses the command wrapped in braces using `parse_brace`.
+ * 4. If the command is not found or a syntax error is detected, returns 
+ * `initial_redir`.
+ * 5. Extracts the redirections following the command (`end_redir`).
+ * 6. If a syntax error is detected, returns `initial_redir`.
+ * 7. If there are subsequent redirections, combines them with the command 
+ * and returns the result.
+ * 8. If there are only initial redirections, combines them with the 
+ * command and returns the result.
+ * 9. If there are no redirections, returns the command node.
  *
- * @param tokens Указатель на список токенов.
- * @param shell Структура оболочки.
- * @return Указатель на AST узел команды с редиректами или `NULL` при обнаружении синтаксической ошибки.
+ * @param tokens Pointer to the list of tokens.
+ * @param shell Shell structure.
+ * @return Pointer to the AST node for the command with redirections, or 
+ * `NULL` if a syntax error is detected.
  */
 t_ast	*process_redir(t_list **tokens, t_shell *shell)
 {
@@ -130,25 +153,26 @@ t_ast	*process_redir(t_list **tokens, t_shell *shell)
 	return (cmd_node);
 }
 
-
-/** add_cmd_arg
- * @brief Добавляет аргумент команды в AST узел команды,
-	если текущий токен является текстом.
+/**
+ * @brief Adds a command argument to the command AST node if the current 
+ * token is text.
  *
- * Функция `add_cmd_arg` выполняет следующие шаги:
- * 1. Проверяет, что переданные указатели `tokens`,
-	`cmd_node` и `shell` не равны NULL.
- * 2. Получает тип текущего токена.
- * 3. Если тип токена не является текстом (T_TEXT), возвращает `false`.
-
-	* 4. Получает значение текущего токена и добавляет его в массив аргументов команды `cmd_args` узла команды `cmd_node`.
- * 5. Продвигает указатель `tokens` на следующий токен.
- * 6. Возвращает `true` при успешном добавлении аргумента команды.
+ * The `add_cmd_arg` function performs the following steps:
+ * 1. Checks that the provided pointers `tokens`, `cmd_node`, and `shell` 
+ * are not `NULL`.
+ * 2. Gets the type of the current token.
+ * 3. If the token type is not text (`T_TEXT`), returns `false`.
+ * 4. Retrieves the value of the current token and appends it to the 
+ * command arguments array
+ *    of the `cmd_node` AST node.
+ * 5. Advances the `tokens` pointer to the next token.
+ * 6. Returns `true` if the command argument was successfully added.
  *
- * @param tokens Указатель на список токенов.
- * @param cmd_node Указатель на AST узел команды.
- * @param shell Структура оболочки.
- * @return `true`, если аргумент команды был успешно добавлен, иначе `false`.
+ * @param tokens Pointer to the list of tokens.
+ * @param cmd_node Pointer to the AST node for the command.
+ * @param shell Shell structure.
+ * @return `true` if the command argument was successfully added, 
+ * otherwise `false`.
  */
 bool	add_cmd_arg(t_list **tokens, t_ast *cmd_node, t_shell *shell)
 {
@@ -161,30 +185,29 @@ bool	add_cmd_arg(t_list **tokens, t_ast *cmd_node, t_shell *shell)
 	if (tkn_type != T_TEXT)
 		return (false);
 	token_value = get_value(*tokens);
-	append_str(&cmd_node->node_content.cmd.cmd_args, token_value, shell);
+	append_str(&cmd_node->u_node_cont.cmd.cmd_args, token_value, shell);
 	*tokens = (*tokens)->next;
 	return (true);
 }
 
 /**
- * @brief Проверяет,
-	является ли текущий токен допустимым редиректом или текстом,
-	который сопровождается командой.
+ * @brief Checks if the current token is a valid redirection or text that
+ *  is followed by a command.
  *
-
-	* Функция `is_valid_redir` принимает указатель на список токенов и командный узел `cmd_node`.
- * Она выполняет следующие шаги:
- * 1. Если `tokens` или текущий токен `NULL`, возвращает `false`.
- * 2. Получает тип текущего токена.
- * 3. Если токен типа `T_TEXT` и присутствует командный узел `cmd_node`,
-	возвращает `true`.
- * 4. Если токен типа `T_APPEND`, `T_HDOC`, `T_INPUT` или `T_OUTPUT`,
-	возвращает `true`.
- * 5. В остальных случаях возвращает `false`.
+ * The `is_valid_redir` function takes a pointer to the list of tokens and 
+ * a command node `cmd_node`.
+ * It performs the following steps:
+ * 1. If `tokens` or the current token is `NULL`, returns `false`.
+ * 2. Gets the type of the current token.
+ * 3. If the token type is `T_TEXT` and a command node `cmd_node` is present,
+ *  returns `true`.
+ * 4. If the token type is `T_APPEND`, `T_HDOC`, `T_INPUT`, or `T_OUTPUT`, 
+ * returns `true`.
+ * 5. In all other cases, returns `false`.
  *
- * @param tokens Указатель на список токенов.
- * @param cmd_node Узел команды.
- * @return `true`, если токен допустим, `false` в противном случае.
+ * @param tokens Pointer to the list of tokens.
+ * @param cmd_node Command node.
+ * @return `true` if the token is valid, otherwise `false`.
  */
 bool	is_valid_redir(t_list **tokens, t_ast *cmd_node)
 {
@@ -202,17 +225,17 @@ bool	is_valid_redir(t_list **tokens, t_ast *cmd_node)
 }
 
 /**
- * @brief Добавляет новый узел редиректа в цепочку редиректов.
+ * @brief Adds a new redirection node to the redirection chain.
  *
-
-	* Функция `append_redir_node` принимает два узла AST: `redir_chain` и `new_redir`.
- * Если `redir_chain` равен NULL, возвращает `new_redir`.
-
-	* Иначе проходит по цепочке редиректов `redir_chain` до конца и добавляет `new_redir`.
+ * The `append_redir_node` function takes two AST nodes: 
+ * `redir_chain` and `new_redir`.
+ * If `redir_chain` is `NULL`, it returns `new_redir`.
+ * Otherwise, it traverses the redirection chain `redir_chain` 
+ * to the end and appends `new_redir`.
  *
- * @param redir_chain Начало цепочки узлов редиректов.
- * @param new_redir Новый узел редиректа для добавления.
- * @return Начало цепочки узлов редиректов с добавленным узлом.
+ * @param redir_chain Start of the redirection node chain.
+ * @param new_redir New redirection node to be added.
+ * @return Start of the redirection node chain with the added node.
  */
 t_ast	*append_redir_node(t_ast *redir_chain, t_ast *new_redir)
 {
@@ -221,26 +244,28 @@ t_ast	*append_redir_node(t_ast *redir_chain, t_ast *new_redir)
 	if (redir_chain == NULL)
 		return (new_redir);
 	current_redir = redir_chain;
-	while (current_redir->node_content.redir.command)
-		current_redir = current_redir->node_content.redir.command;
-	current_redir->node_content.redir.command = new_redir;
+	while (current_redir->u_node_cont.redir.command)
+		current_redir = current_redir->u_node_cont.redir.command;
+	current_redir->u_node_cont.redir.command = new_redir;
 	return (redir_chain);
 }
 
 /**
- * @brief Извлекает и обрабатывает редиректы из списка токенов.
+ * @brief Extracts and processes redirections from the list of 
+ * tokens.
  *
- * Функция `extract_redirections` проходит по списку токенов `tokens`,
-	извлекает узлы редиректов,
- * добавляет их в цепочку редиректов и возвращает эту цепочку.
- * Если токен является аргументом команды, он добавляется в `cmd_node`.
- * Если найден редирект, создается новый узел редиректа,
-	который добавляется в цепочку.
+ * The `extract_redirections` function iterates through the list 
+ * of tokens `tokens`,
+ * extracts redirection nodes, adds them to the redirection chain, 
+ * and returns the chain.
+ * If the token is a command argument, it is added to the `cmd_node`.
+ * When a redirection is found, a new redirection node is created and 
+ * added to the chain.
  *
- * @param tokens Указатель на список токенов.
- * @param cmd_node Узел команды, к которому будут добавляться аргументы.
- * @param shell Структура оболочки.
- * @return Начало цепочки узлов редиректов или NULL в случае ошибки.
+ * @param tokens Pointer to the list of tokens.
+ * @param cmd_node Command node to which arguments will be added.
+ * @param shell Shell structure.
+ * @return Start of the redirection node chain or `NULL` in case of an error.
  */
 t_ast	*extract_redirections(t_list **tokens, t_ast *cmd_node, t_shell *shell)
 {

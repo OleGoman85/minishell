@@ -1,16 +1,28 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   pipes.c                                            :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: ogoman <ogoman@student.hive.fi>            +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2024/07/24 08:10:20 by ogoman            #+#    #+#             */
+/*   Updated: 2024/07/24 08:12:37 by ogoman           ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
 
 #include "minishell.h"
 
 /**
- * @brief Выполняет последовательность команд, связанных в конвейер.
+ * @brief Executes a sequence of commands connected by pipes.
  *
- * Функция создает конвейер, выполняет каждую команду из списка команд и
- * ожидает завершения всех дочерних процессов. Она использует файловые
- * дескрипторы для передачи данных между командами в конвейере.
+ * This function creates pipes, executes each command in the command list,
+ * and waits for all child processes to complete. It uses file descriptors to
+ * pass data between commands in the pipeline.
  *
- * @param pipe_lst Указатель на список команд для выполнения в конвейере.
- * @param shell Указатель на структуру оболочки для управления процессами.
- * @return Код завершения последней команды в конвейере.
+ * @param pipe_lst Pointer to the list of commands to be executed in 
+ * the pipeline.
+ * @param shell Pointer to the shell structure for process management.
+ * @return The exit code of the last command in the pipeline.
  */
 int	execute_command_chain(t_list *pipe_lst, t_shell *shell)
 {
@@ -35,20 +47,19 @@ int	execute_command_chain(t_list *pipe_lst, t_shell *shell)
 	}
 	return (collect_child_statuses(last_exec_pid, ft_lstsize(pipe_lst), shell));
 }
-//переделать
 /**
- * @brief Собирает и возвращает итоговый статус выхода всех процессов конвейера.
+ * @brief Collects and returns the final exit status of all pipeline processes.
  *
- * Функция ожидает завершения всех процессов конвейера, обрабатывает их
- * статус выхода и возвращает статус выхода последнего выполняемого процесса.
- * При обработке статусов сигналов обеспечивается вывод дополнительных
- * сообщений и перевод строки при необходимости.
+ * This function waits for all pipeline processes to complete, processes their
+ * exit status, and returns the exit status of the last executed process.
+ * Additional messages and newlines are handled when processing signal statuses.
  *
- * @param last_exec_pid PID последнего выполняемого процесса.
- * @param pipe_count Количество процессов в конвейере.
- * @param shell Указатель на структуру shell для управления памятью и сигналами.
- * @return Итоговый статус выхода последнего выполняемого процесса.
+ * @param last_exec_pid PID of the last executed process.
+ * @param pipe_count Number of processes in the pipeline.
+ * @param shell Pointer to the shell structure for memory and signal management.
+ * @return The final exit status of the last executed process.
  */
+
 int	collect_child_statuses(pid_t last_exec_pid, int pipe_count, t_shell *shell)
 {
 	bool	need_newline;
@@ -71,16 +82,16 @@ int	collect_child_statuses(pid_t last_exec_pid, int pipe_count, t_shell *shell)
 }
 
 /**
- * @brief Обрабатывает и выполняет цепочку команд в конвейере.
+ * @brief Processes and executes a command pipeline.
  *
- * Эта функция создает список команд из переданного AST узла и
- * вызывает функцию для выполнения цепочки команд. Возвращает
- * статус выполнения конвейера.
+ * This function creates a list of commands from the provided AST node and
+ * calls the function to execute the command chain. It returns the pipeline
+ * execution status.
  *
- * @param ast_node Указатель на AST узел, представляющий конвейер.
- * @param shell Указатель на структуру оболочки, используемую для
- * управления памятью и состоянием.
- * @return Статус выполнения конвейера.
+ * @param ast_node Pointer to the AST node representing the pipeline.
+ * @param shell Pointer to the shell structure used for memory and state 
+ * management.
+ * @return The status of the pipeline execution.
  */
 int	process_pipeline(t_ast *ast_node, t_shell *shell)
 {
@@ -92,9 +103,9 @@ int	process_pipeline(t_ast *ast_node, t_shell *shell)
 	current = ast_node;
 	while (current && current->node_type == PIPE)
 	{
-		lstadd_front_tracked(current->node_content.pipe.output_side, &commands,
+		lstadd_front_tracked(current->u_node_cont.pipe.output_side, &commands,
 			COMMAND_TRACK, shell);
-		current = current->node_content.pipe.input_side;
+		current = current->u_node_cont.pipe.input_side;
 	}
 	if (current)
 		lstadd_front_tracked(current, &commands, COMMAND_TRACK, shell);
@@ -103,18 +114,19 @@ int	process_pipeline(t_ast *ast_node, t_shell *shell)
 }
 
 /**
- * @brief Выполняет одну команду в конвейере (pipeline).
+ * @brief Executes a single command in the pipeline.
  *
- * Эта функция выполняет одну команду в конвейере, создавая новый процесс
- * с помощью create_process. В дочернем процессе перенаправляются потоки ввода/вывода
- * для создания пайпов, затем выполняется команда. Родительский процесс
- * возвращает PID дочернего процесса.
+ * This function executes one command in the pipeline by creating a new process
+ * using `create_process`. In the child process, input/output streams are 
+ * redirected
+ * to create pipes, and then the command is executed. The parent process returns
+ * the PID of the child process.
  *
- * @param pipe_lst Указатель на список команд конвейера.
- * @param last_pipe_fd Дескриптор чтения из предыдущего пайпа.
- * @param pipe_fds Массив из двух дескрипторов для текущего пайпа.
- * @param shell Указатель на структуру shell для управления состоянием.
- * @return PID дочернего процесса, выполняющего команду.
+ * @param pipe_lst Pointer to the list of pipeline commands.
+ * @param last_pipe_fd Read descriptor from the previous pipe.
+ * @param pipe_fds Array of two descriptors for the current pipe.
+ * @param shell Pointer to the shell structure for state management.
+ * @return PID of the child process executing the command.
  */
 pid_t	run_pipe_cmd(t_list *pipe_lst, int last_pipe_fd,
 		int pipe_fds[2], t_shell *shell)

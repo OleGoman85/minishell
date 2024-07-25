@@ -1,35 +1,46 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   translate.c                                        :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: ogoman <ogoman@student.hive.fi>            +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2024/07/24 09:03:03 by ogoman            #+#    #+#             */
+/*   Updated: 2024/07/24 09:15:18 by ogoman           ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include "minishell.h"
 
-// нужно добавить обработку heredoc!
-
 /**
- * resolve_ast_content
- * @brief Разрешает содержимое AST узла,
-	выполняя замену переменных и аргументов команды.
+ * @brief Resolves the content of an AST node by performing variable and 
+ * command argument substitutions.
  *
- * Эта функция обрабатывает два типа узлов AST: команды и редиректы.
- * Для узлов команд она выполняет подстановку аргументов,
-	заменяя переменные на их значения.
- * Для узлов редиректов (кроме heredoc) она разрешает имя файла,
-	выполняя аналогичную замену переменных.
+ * This function processes two types of AST nodes: commands and redirects.
+ * For command nodes, it performs substitution on arguments, replacing 
+ * variables with their values.
+ * For redirect nodes (excluding heredoc), it resolves the filename by 
+ * performing similar variable substitution.
  *
- * Подробное описание:
-
-	* 1. Функция начинает с инициализации списка для хранения разрешенных аргументов.
- * 2. Если тип узла - команда (CMD):
- *    - Извлекает аргументы команды и обрабатывает каждый из них,
-	выполняя подстановку переменных.
- *    - Заменяет исходные аргументы команды на разрешенные аргументы.
- * 3. Если тип узла - редирект (REDIR) и это не heredoc:
- *    - Извлекает имя файла и выполняет подстановку переменных.
- *    - Проверяет, что после подстановки остался один аргумент и он не пустой.
- *    - Если аргумент корректен, заменяет исходное имя файла на разрешенное.
- *    - В случае некорректного аргумента выводит сообщение об ошибке.
+ * Detailed description:
+ * 
+ * 1. The function starts by initializing a list to hold resolved arguments.
+ * 2. If the node type is CMD:
+ *    - Extracts the command arguments and processes each of them, performing 
+ * variable substitution.
+ *    - Replaces the original command arguments with the resolved arguments.
+ * 3. If the node type is REDIR and it's not a heredoc:
+ *    - Extracts the filename and performs variable substitution.
+ *    - Checks that there is exactly one argument left after substitution and
+ *  that it is not empty.
+ *    - If the argument is valid, replaces the original filename with the
+ *  resolved one.
+ *    - If the argument is invalid, outputs an error message.
  *
- * @param node Узел AST для обработки.
-
-	* @param shell Структура оболочки для управления памятью и синтаксическими ошибками.
- * @return Обработанный узел AST.
+ * @param node The AST node to process.
+ * @param shell The shell structure for memory management and syntax error
+ *  handling.
+ * @return The processed AST node.
  */
 t_ast	*resolve_ast_content(t_ast *node, t_shell *shell)
 {
@@ -40,50 +51,48 @@ t_ast	*resolve_ast_content(t_ast *node, t_shell *shell)
 	args_to_resolve = NULL;
 	if (node->node_type == CMD)
 	{
-		cmd_args = node->node_content.cmd.cmd_args;
+		cmd_args = node->u_node_cont.cmd.cmd_args;
 		while (*cmd_args)
 			resolve_arg(*cmd_args++, &args_to_resolve, shell);
-		node->node_content.cmd.cmd_args = create_string_array(&args_to_resolve,
+		node->u_node_cont.cmd.cmd_args = create_string_array(&args_to_resolve,
 				shell);
 	}
 	else if (node->node_type == REDIR
-		&& node->node_content.redir.redir_type != T_HDOC)
+		&& node->u_node_cont.redir.redir_type != T_HDOC)
 	{
-		filename = node->node_content.redir.filename;
+		filename = node->u_node_cont.redir.filename;
 		resolve_arg(filename, &args_to_resolve, shell);
 		if (ft_lstsize(args_to_resolve) != 1
 			|| !ft_strcmp(args_to_resolve->content, ""))
 			error_msg("redirection:", NULL, "invalid filename", shell);
 		else
-			node->node_content.redir.filename = args_to_resolve->content;
+			node->u_node_cont.redir.filename = args_to_resolve->content;
 	}
 	return (node);
 }
 
 /**
- * resolve_ev
- * @brief Обрабатывает переменные окружения в строке,
-	включая специальную переменную "?".
+ * @brief Processes environment variables in a string, including the special 
+ * variable "?".
  *
- * Эта функция принимает строку `input`,
-	контекст подстановки `context` и структуру оболочки `shell`.
- * Она выполняет следующие шаги:
- * 1. Проверяет, является ли следующий символ после `$` символом `?`:
- *    - Если да, заменяет его на код возврата предыдущей команды.
- * 2. Если нет,
-	и если символ в режиме вне кавычек и следующим символом является `"` или `'`,
-	то возвращается без изменения.
- * 3. В противном случае, ищет значение переменной окружения,
-	указанной после `$`.
- * 4. Если найдено значение переменной и режим вне кавычек,
-	выполняет разделение слова.
- * 5. Если значение переменной найдено, добавляет его в буфер переменных.
+ * This function takes the `input` string, substitution context `context`, 
+ * and shell structure `shell`.
+ * It performs the following steps:
+ * 1. Checks if the character following `$` is `?`:
+ *    - If so, replaces it with the return code of the previous command.
+ * 2. If not, and if the character is outside of quotes and the next character
+ * is `"` or `'`, returns without modification.
+ * 3. Otherwise, searches for the value of the environment variable 
+ * specified after `$`.
+ * 4. If a variable value is found and outside quotes, performs word 
+ * tokenization.
+ * 5. If a variable value is found, adds it to the variable buffer.
  *
- * @param input Строка, содержащая переменные окружения для подстановки.
-
-	* @param context Контекст подстановки для хранения информации о состоянии подстановки.
- * @param shell Структура оболочки,
-	используемая для управления памятью и переменными окружения.
+ * @param input The string containing environment variables for substitution.
+ * @param context The substitution context holding the substitution state 
+ * information.
+ * @param shell The shell structure used for memory management and 
+ * environment variables.
  */
 void	resolve_ev(char *input, t_subst_context *context, t_shell *shell)
 {
@@ -109,39 +118,38 @@ void	resolve_ev(char *input, t_subst_context *context, t_shell *shell)
 }
 
 /**
- * extract_ev_value
- * @brief Извлекает значение переменной окружения из входной строки.
+ * @brief Extracts the value of an environment variable from the input string.
  *
- * Эта функция принимает строку `input`,
-	текущий контекст подстановки `context` и оболочку `shell`.
- * Она ищет и извлекает имя переменной окружения из строки,
-	начиная с текущей позиции,
- * и возвращает значение этой переменной,
-	если оно существует. Если имя переменной не найдено
- * или не является допустимым, функция возвращает `NULL`.
+ * This function takes the `input` string, the current substitution context 
+ * `context`, and the shell `shell`.
+ * It searches and extracts the environment variable name from the string 
+ * starting from the current position,
+ * and returns the value of that variable if it exists. If the variable name 
+ * is not found or invalid,
+ * the function returns `NULL`.
  *
- * 1. Проверяет,
-	начинается ли переменная окружения с допустимого символа (буквы или '_').
- * 2. Если символ не является допустимым,
-	добавляет текущий символ из `input` в буфер подстановки
- *    и возвращает `NULL`.
- * 3. Перемещается по строке,
-	пока встречаются допустимые символы имени переменной окружения (буквы,
-	цифры, '_').
- * 4. Извлекает имя переменной окружения из строки и выделяет для него память.
- * 5. Если имя переменной не найдено или недопустимо,
-	добавляет текущий символ из `input` в буфер подстановки
- *    и возвращает `NULL`.
-
-	* 6. Получает значение переменной окружения и обновляет текущую позицию в строке.
- * 7. Возвращает значение переменной окружения.
+ * 1. Checks if the environment variable starts with a valid character 
+ * (letter or `_`).
+ * 2. If the character is not valid, adds the current character from 
+ * `input` to the substitution buffer
+ *    and returns `NULL`.
+ * 3. Moves through the string while valid environment variable name 
+ * characters (letters, digits, `_`) are found.
+ * 4. Extracts the environment variable name from the string and allocates 
+ * memory for it.
+ * 5. If the variable name is not found or is invalid, adds the current 
+ * character from `input` to the substitution buffer
+ *    and returns `NULL`.
+ * 6. Retrieves the value of the environment variable and updates the current
+ *  position in the string.
+ * 7. Returns the value of the environment variable.
  *
- * @param input Строка, содержащая переменную окружения для извлечения.
- * @param context Текущий контекст подстановки,
-	содержащий позицию и буфер подстановки.
-
-	* @param shell Указатель на структуру оболочки для управления памятью и переменными окружения.
- * @return Значение переменной окружения или `NULL` в случае ошибки.
+ * @param input The string containing the environment variable to extract.
+ * @param context The current substitution context holding the position and
+ *  substitution buffer.
+ * @param shell Pointer to the shell structure for memory management and
+ *  environment variables.
+ * @return The value of the environment variable or `NULL` if an error occurs.
  */
 char	*extract_ev_value(char *input, t_subst_context *context, t_shell *shell)
 {
@@ -171,33 +179,32 @@ char	*extract_ev_value(char *input, t_subst_context *context, t_shell *shell)
 	return (ev_value);
 }
 
-//-------quotes -------
 /**
- * @brief Обрабатывает символы внутри кавычек в строке.
+ * @brief Processes characters inside quotes in the string.
  *
- * Эта функция предназначена для обработки символов, когда они находятся
- * внутри одинарных или двойных кавычек в строке. В зависимости от типа кавычек
- * функция выполняет различные действия:
+ * This function is designed to handle characters when they are inside single 
+ * or double quotes in the string.
+ * Depending on the type of quotes, the function performs different actions:
  *
- * 1. Если кавычки одинарные (quote_char == '\''):
- *    - Проверяет, является ли текущий символ закрывающей одинарной кавычкой.
- *    - Если да, и буфер пустой, устанавливает флаг is_empty_qts.
- *    - Переключает режим quote_mode на OUTSIDE.
- *    - В противном случае добавляет символ в буфер.
+ * 1. If the quotes are single (quote_char == '\''):
+ *    - Checks if the current character is a closing single quote.
+ *    - If yes, and the buffer is empty, sets the is_empty_qts flag.
+ *    - Switches the quote_mode to OUTSIDE.
+ *    - Otherwise, adds the character to the buffer.
  *
- * 2. Если кавычки двойные (quote_char == '\"'):
- *    - Проверяет, является ли текущий символ знаком доллара для
- *      обработки переменных окружения.
- *    - Проверяет, является ли текущий символ закрывающей двойной кавычкой.
- *      Если да, и буфер пустой, устанавливает флаг is_empty_qts.
- *      Переключает режим quote_mode на OUTSIDE.
- *    - Обрабатывает экранированные символы внутри двойных кавычек.
- *    - В противном случае добавляет символ в буфер.
+ * 2. If the quotes are double (quote_char == '\"'):
+ *    - Checks if the current character is a dollar sign for environment 
+ * variable processing.
+ *    - Checks if the current character is a closing double quote. If yes,
+ *  and the buffer is empty, sets the is_empty_qts flag.
+ *      Switches the quote_mode to OUTSIDE.
+ *    - Processes escaped characters inside double quotes.
+ *    - Otherwise, adds the character to the buffer.
  *
- * @param quote_char Тип кавычек (одинарные или двойные).
- * @param arg Строка для обработки.
- * @param context Контекст обработки строки.
- * @param shell Указатель на структуру оболочки.
+ * @param quote_char The type of quotes (single or double).
+ * @param arg The string to process.
+ * @param context The context of string processing.
+ * @param shell Pointer to the shell structure.
  */
 void	process_quotes(char quote_char, char *arg, t_subst_context *context,
 		t_shell *shell)
@@ -229,18 +236,24 @@ void	process_quotes(char quote_char, char *arg, t_subst_context *context,
 	}
 }
 /**
- * @brief Обрабатывает символы вне кавычек в строке.
+ * @brief Processes characters that are not enclosed in quotes.
  *
- * Эта функция обрабатывает символы в строке, когда они находятся вне кавычек:
- * - Разделяет строку по пробелам.
- * - Обрабатывает переменные окружения, символы тильды и экранирование.
- * - Переключает режим кавычек.
- * - Добавляет символы в буфер.
+ * This function handles specific characters within a string that are not 
+ * surrounded by quotes. It processes:
+ * - Space characters by inserting a token.
+ * - Dollar signs (`$`) for variable resolution.
+ * - Single quotes (`'`) to switch to single quote mode.
+ * - Double quotes (`"`) to switch to double quote mode.
+ * - Backslashes (`\`) for escaping the next character.
+ * - Tilde (`~`) for home directory expansion.
+ * - Asterisks (`*`) for wildcard matching.
+ * - All other characters are added to the substitution buffer.
  *
- * @param arg Строка для обработки.
- * @param context Контекст обработки строки.
- * @param shell Указатель на структуру оболочки.
+ * @param arg The argument string to process.
+ * @param context The substitution context holding the current state.
+ * @param shell Pointer to the shell structure for memory management.
  */
+
 void	process_unquoted_chars(char *arg, t_subst_context *context,
 		t_shell *shell)
 {
@@ -271,23 +284,21 @@ void	process_unquoted_chars(char *arg, t_subst_context *context,
 	}
 }
 /**
- * @brief Обрабатывает строку аргумента, выполняя замену переменных,
-	кавычек и специальных символов.
+ * @brief Processes an argument string, performing variable substitution, 
+ * quote handling, and special character processing.
  *
- * Эта функция принимает строку аргумента и выполняет следующие действия:
- * - Инициализирует контекст для отслеживания состояния обработки.
- * - Проходит по каждому символу строки,
-	обрабатывая его в зависимости от текущего режима кавычек.
- * - Выполняет замену переменных окружения, обработку символа тильды (~),
-	доллара ($), обратной косой черты (\) и других специальных символов.
- * - Добавляет обработанные токены в список аргументов.
+ * This function initializes a context for tracking the substitution state, 
+ * processes each character of the input string
+ * based on the current quote mode, performs environment variable substitution,
+ *  tilde expansion, and handles special characters.
+ * Processed tokens are added to the argument list.
  *
- * @param arg Строка аргумента для обработки.
- * @param arg_list Указатель на список,
-	куда будут добавлены обработанные аргументы.
- * @param shell Указатель на структуру оболочки,
-	содержащую информацию о состоянии среды выполнения.
+ * @param arg The argument string to process.
+ * @param arg_list Pointer to the list where processed arguments will be added.
+ * @param shell Pointer to the shell structure containing runtime environment 
+ * information.
  */
+
 void	resolve_arg(char *arg, t_list **arg_list, t_shell *shell)
 {
 	t_subst_context	context;
@@ -318,21 +329,16 @@ void	resolve_arg(char *arg, t_list **arg_list, t_shell *shell)
 }
 
 /**
- * @brief Обрабатывает имена файлов и добавляет их в список токенов.
+ * @brief Processes file names and adds them to the token list.
  *
- * Функция завершает текущую строку в буфере, получает список файлов,
- * фильтрует его в соответствии с заданным шаблоном и добавляет
- * отфильтрованные файлы в список токенов.
+ * This function completes the current string in the buffer, retrieves a list 
+ * of files matching the path,
+ * filters the files based on the given pattern, and adds the filtered files 
+ * to the token list.
+ * It then resets the buffer after processing.
  *
- * Шаги выполнения:
- * 1. Завершает текущую строку в буфере.
- * 2. Получает список файлов, соответствующих пути.
- * 3. Фильтрует список файлов в соответствии с заданным шаблоном.
- * 4. Добавляет отфильтрованные файлы в список токенов.
- * 5. Обнуляет буфер после обработки.
- *
- * @param ctx Указатель на контекст замены.
- * @param shell Указатель на структуру оболочки для ������правления памятью.
+ * @param ctx Pointer to the substitution context.
+ * @param shell Pointer to the shell structure for memory management.
  */
 void	process_filename(t_subst_context *ctx, t_shell *shell)
 {
@@ -351,19 +357,19 @@ void	process_filename(t_subst_context *ctx, t_shell *shell)
 }
 
 /**
- * @brief Считывает записи каталога и добавляет их в список файлов.
+ * @brief Reads directory entries and adds them to the file list.
  *
- * Эта функция открывает указанный каталог и считывает все его записи.
- * Для каждой записи, кроме текущего (".") и родительского ("..") каталогов,
- * она создает полное имя файла и добавляет его в указанный список файлов.
- * Если корневой путь не является ".", то полное имя файла будет включать
- * корневой путь. В противном случае, только имя файла будет добавлено.
+ * This function opens the specified directory and reads its entries. For each 
+ * entry, except for the current (".") 
+ * and parent ("..") directories, it creates a full file name and adds it to 
+ * the provided file list. If the root path 
+ * is not ".", the full file name includes the root path; otherwise, only the 
+ * file name is added.
  *
- * @param directory Указатель на открытый каталог.
- * @param root Путь к корневому каталогу.
- * @param file_list Указатель на список файлов, куда будут добавлены
- *                  найденные файлы.
- * @param shell Указатель на структуру shell для управления памятью.
+ * @param directory Pointer to the opened directory.
+ * @param root Path to the root directory.
+ * @param file_list Pointer to the file list where found files will be added.
+ * @param shell Pointer to the shell structure for memory management.
  */
 static void	read_directory_files(DIR *directory, char *root, t_list **file_list,
 		t_shell *shell)
@@ -390,18 +396,20 @@ static void	read_directory_files(DIR *directory, char *root, t_list **file_list,
 }
 
 /**
- * @brief Извлекает список файлов из указанного каталога.
+ * @brief Retrieves a list of files from the specified directory.
  *
- * Эта функция извлекает корневой путь из буфера замены контекста,
- * открывает соответствующий каталог, считывает его содержимое
- * с помощью функции read_directory_files и возвращает список найденных
- * файлов. Если каталог не может быть открыт или он пуст, функция
- * возвращает NULL.
+ * This function extracts the root path from the substitution buffer context, 
+ * opens the corresponding directory,
+ * reads its contents using the `read_directory_files` function, and returns
+ *  the list of found files. If the directory 
+ * cannot be opened or is empty, the function returns NULL.
  *
- * @param context Указатель на контекст замены для получения корневого пути.
- * @param shell Указатель на структуру shell для управления памятью.
- * @return Указатель на список файлов или NULL, если каталог пуст или
- *         не может быть открыт.
+ * @param context Pointer to the substitution context for retrieving the root
+ *  path.
+ * @param shell Pointer to the shell structure for memory management.
+ * 
+ * @return Pointer to the list of files, or NULL if the directory is empty 
+ * or cannot be opened.
  */
 t_list	*retrive_files(t_subst_context *context, t_shell *shell)
 {
@@ -431,10 +439,12 @@ t_list	*retrive_files(t_subst_context *context, t_shell *shell)
 }
 
 /**
- * Вставляет новый узел в начало списка.
+ * @brief Inserts a new node at the beginning of the list.
  *
- * @param file_list Указатель на указатель на первый узел списка.
- * @param new_node Указатель на новый узел, который нужно вставить.
+ * This function inserts a new node at the start of the list.
+ *
+ * @param file_list Pointer to the pointer to the first node of the list.
+ * @param new_node Pointer to the new node to be inserted.
  */
 static void	insert_at_beginning(t_list **file_list, t_list *new_node)
 {
@@ -445,10 +455,14 @@ static void	insert_at_beginning(t_list **file_list, t_list *new_node)
 }
 
 /**
- * Вставляет новый узел в середину списка после указанного узла.
+ * @brief Inserts a new node in the middle of the list after the 
+ * specified node.
  *
- * @param cur_node Указатель на узел, после которого нужно вставить новый узел.
- * @param new_node Указатель на новый узел, который нужно вставить.
+ * This function inserts a new node after a given node in the list.
+ *
+ * @param cur_node Pointer to the node after which the new node will be 
+ * inserted.
+ * @param new_node Pointer to the new node to be inserted.
  */
 static void	insert_in_middle(t_list *cur_node, t_list *new_node)
 {
@@ -459,20 +473,21 @@ static void	insert_in_middle(t_list *cur_node, t_list *new_node)
 	new_node->prev = cur_node;
 }
 
-/** ФУНКЦИЯ - УРОДКА. ПЕРЕДЕЛАТЬ!
- * @brief Добавляет новый файл в связанный список в алфавитном порядке.
+/**
+ * @brief Adds a new file to the linked list in alphabetical order.
  *
- * Эта функция создает новый узел списка, содержащий имя файла, и вставляет
- * его в связанный список в правильное место, чтобы сохранить алфавитный
- * порядок. Если список пуст, новый узел становится первым элементом.
- * Если имя файла лексикографически меньше имени первого узла, новый узел
- * вставляется в начало списка. В противном случае, функция находит
- * подходящее место в списке и вставляет новый узел.
+ * This function creates a new list node containing the file name and 
+ * inserts it into the linked list in the
+ * correct position to maintain alphabetical order. If the list is empty,
+ *  the new node becomes the first element.
+ * If the file name is lexicographically less than the first node's name,
+ *  the new node is inserted at the beginning.
+ * Otherwise, the function finds the appropriate position in the list and
+ *  inserts the new node.
  *
- * @param filename Имя файла, который нужно добавить в список.
- * @param file_list Указатель на указатель на первый узел списка.
- * @param shell Указатель на структуру оболочки,
-	используемую для управления памятью.
+ * @param filename The name of the file to be added to the list.
+ * @param file_list Pointer to the pointer to the first node of the list.
+ * @param shell Pointer to the shell structure used for memory management.
  */
 void	add_file_to_list(char *filename, t_list **file_list, t_shell *shell)
 {
@@ -498,18 +513,18 @@ void	add_file_to_list(char *filename, t_list **file_list, t_shell *shell)
 }
 
 /**
- * @brief Очищает список файлов, удаляя записи, которые не соответствуют
- * заданному шаблону или считаются скрытыми файлами.
+ * @brief Cleans up the list of files by removing entries that do not match 
+ * the pattern or are hidden.
  *
- * Эта функция проходит по предоставленному списку файлов и фильтрует их
- * на основе соответствия шаблону из буфера подстановки (context->subst_buffer)
- * и проверки на скрытые файлы. Файлы, которые не соответствуют шаблону или
- * являются скрытыми, удаляются из списка.
+ * This function filters the provided list of files based on pattern matching 
+ * from the substitution buffer (`context->subst_buffer`)
+ * and visibility checks. Files that do not match the pattern or are hidden 
+ * are removed from the list.
  *
- * @param file_list Список файлов для фильтрации.
- * @param context Контекст подстановки, содержащий буфер шаблона.
- * @return Очищенный список файлов, содержащий только соответствующие
- * шаблону и не скрытые файлы.
+ * @param file_list The list of files to be filtered.
+ * @param context The substitution context containing the pattern buffer.
+ * @return The cleaned list of files, containing only those that match the 
+ * pattern and are not hidden.
  */
 t_list	*clean_file_list(t_list *file_list, t_subst_context *context)
 {

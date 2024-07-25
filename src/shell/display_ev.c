@@ -1,6 +1,34 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   display_ev.c                                       :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: ogoman <ogoman@student.hive.fi>            +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2024/07/24 09:26:57 by ogoman            #+#    #+#             */
+/*   Updated: 2024/07/24 09:27:45 by ogoman           ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
 
 #include "minishell.h"
 
+/**
+ * @brief Displays the environment variable list.
+ *
+ * This function iterates through the environment variable list and prints 
+ * each environment variable.
+ * If `export_mode` is true, it prints variables in the format used by the 
+ * `export` command (`declare -x`).
+ * If `export_mode` is false, it prints only those variables that have a 
+ non-null value.
+ *
+ * @param export_mode Boolean flag indicating whether to use export mode 
+ (with `declare -x`) or not.
+ * @param ev Pointer to the list of environment variables to be displayed.
+ * @param shell Pointer to the shell structure for managing memory and 
+ * file descriptors.
+ * @return Returns `EXIT_SUCCESS` on completion.
+ */
 int	display_ev_list(bool export_mode, t_list *ev, t_shell *shell)
 {
 	while (ev != NULL)
@@ -28,6 +56,18 @@ int	display_ev_list(bool export_mode, t_list *ev, t_shell *shell)
 	}
 	return (EXIT_SUCCESS);
 }
+/**
+ * @brief Fills an array with environment variable strings.
+ *
+ * This function populates a provided array with environment variable strings 
+ * in the format `NAME=VALUE`.
+ * It uses the environment variable list to construct the strings and tracks 
+ * memory allocation.
+ *
+ * @param ev_array Array to be filled with environment variable strings.
+ * @param ev_list Pointer to the list of environment variables.
+ * @param shell Pointer to the shell structure for memory management.
+ */
 
 static void	fill_ev_array(char **ev_array, t_list *ev_list, t_shell *shell)
 {

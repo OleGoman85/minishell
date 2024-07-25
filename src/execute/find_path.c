@@ -1,16 +1,29 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   find_path.c                                        :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: ogoman <ogoman@student.hive.fi>            +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2024/07/24 08:06:35 by ogoman            #+#    #+#             */
+/*   Updated: 2024/07/24 08:09:29 by ogoman           ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
 
 #include "minishell.h"
 
 /**
- * @brief Генерирует массив путей из переменной окружения PATH.
+ * @brief Generates an array of paths from the PATH environment variable.
  *
- * Функция получает значение переменной окружения PATH и разбивает его
- * на массив строк, представляющих различные пути. Если в PATH включен
- * текущий каталог (".") в качестве одного из путей, он добавляется
- * к массиву путей.
+ * This function retrieves the value of the PATH environment variable 
+ * and splits it
+ * into an array of strings representing different paths. If PATH includes the
+ * current directory (".") as one of the paths, it is added to the 
+ * array of paths.
  *
- * @param shell Указатель на структуру shell для управления памятью.
- * @return Массив строк, содержащих пути из переменной окружения PATH.
+ * @param shell Pointer to the shell structure for memory management.
+ * @return Array of strings containing paths from the PATH environment 
+ * variable.
  */
 char	**generate_paths(t_shell *shell)
 {
@@ -34,16 +47,16 @@ char	**generate_paths(t_shell *shell)
 }
 
 /**
- * @brief Находит путь к исполняемому файлу.
+ * @brief Finds the path to an executable file.
  *
- * Функция проверяет, является ли команда заданным путем или нужно
- * искать её в путях переменной окружения PATH. Если команда содержит
- * '/', она проверяет доступность файла по указанному пути.
- * В противном случае, функция ищет команду в PATH.
+ * This function checks whether the command is a given path or needs to be
+ * searched in the PATH environment variable. If the command contains
+ * '/', it checks the file's availability at the specified path.
+ * Otherwise, the function searches for the command in PATH.
  *
- * @param cmd Имя команды или путь к исполняемому файлу.
- * @param shell Указатель на структуру shell для управления памятью.
- * @return Путь к исполняемому файлу или NULL, если команда не найдена.
+ * @param cmd Command name or path to the executable file.
+ * @param shell Pointer to the shell structure for memory management.
+ * @return Path to the executable file or NULL if the command is not found.
  */
 char	*find_executable_path(char *cmd, t_shell *shell)
 {
@@ -74,17 +87,21 @@ char	*find_executable_path(char *cmd, t_shell *shell)
 	return (NULL);
 }
 /**
- * @brief Ищет исполняемый файл в путях, указанных в переменной PATH.
+ * @brief Searches for an executable file in the directories 
+ * specified in PATH.
  *
- * Функция перебирает пути в переменной PATH и пытается найти
- * исполняемый файл. Если файл найден и доступен для выполнения,
- * функция возвращает его полный путь. В противном случае, возвращает
- * сообщение об ошибке.
+ * This function iterates over directories in the PATH variable 
+ * and tries to find
+ * the executable file. If the file is found and is executable, 
+ * the function returns
+ * its full path. Otherwise, it returns an error message.
  *
- * @param bin_name Имя исполняемого файла.
- * @param shell Указатель на структуру shell для управления памятью.
- * @return Полный путь к исполняемому файлу или NULL, если команда не найдена.
+ * @param bin_name Name of the executable file.
+ * @param sh Pointer to the shell structure for memory management.
+ * @return Full path to the executable file or NULL if the command 
+ * is not found.
  */
+
 char	*locate_executable(char *bin_name, t_shell *sh)
 {
 	char	*full_path;
