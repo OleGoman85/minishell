@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ft_exit.c                                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: ogoman <ogoman@student.hive.fi>            +#+  +:+       +#+        */
+/*   By: aarbenin <aarbenin@student.hive.fi>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/25 09:49:18 by ogoman            #+#    #+#             */
-/*   Updated: 2024/07/25 10:20:26 by ogoman           ###   ########.fr       */
+/*   Updated: 2024/07/25 15:04:52 by aarbenin         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -104,43 +104,9 @@ static int	handle_exit_errors(int error_code, char *arg, t_shell *shell)
 	return (EXIT_FAILURE);
 }
 
-// /**
-//  * Checks if the provided argument is a valid numeric argument.
-//  *
-//  * @param arg The argument to check.
-//  * @param num Pointer to store the converted number.
-//  * @param shell The shell context.
-//  * @param error_status Pointer to store the error status.
-//  * @return 2 if the argument is invalid, -1 otherwise.
-//  */
-// static int	check_numeric_argument(const char *arg, long long *num,
-// 			t_shell *shell, int *error_status)
-// {
-// 	const char	*str;
-// 	int			sign;
-// 	bool		overflow;
-// 	char		*trimmed_arg;
-
-// 	trimmed_arg = ft_strtrim(arg, " ");
-// 	if (!trimmed_arg || *(str = skip_whitespace_and_sign(trimmed_arg, &sign)) == '\0' || !ft_isdigit_str(str))
-// 	{
-// 		free(trimmed_arg);
-// 		*error_status = 2;
-// 		return (handle_exit_errors(2, (char *)arg, shell));
-// 	}
-// 	*num = custom_atoull(str, sign, &overflow);
-// 	free(trimmed_arg);
-// 	if (overflow || (*num == LLONG_MIN && sign != -1) || (*num == LLONG_MAX && sign != 1))
-// 	{
-// 		*error_status = 2;
-// 		return (handle_exit_errors(2, (char *)arg, shell));
-// 	}
-// 	*num *= sign;
-// 	return (-1);
-// }
 
 static int	check_numeric_argument(const char *arg, long long *num,
-	t_shell *shell, int *error_status)
+			t_shell *shell, int *error_status)
 {
 	const char	*str;
 	int			sign;
@@ -148,13 +114,8 @@ static int	check_numeric_argument(const char *arg, long long *num,
 	char		*trimmed_arg;
 
 	trimmed_arg = ft_strtrim(arg, " ");
-	if (!trimmed_arg)
-	{
-		*error_status = 2;
-		return (handle_exit_errors(2, (char *)arg, shell));
-	}
 	str = skip_whitespace_and_sign(trimmed_arg, &sign);
-	if (*str == '\0' || !ft_isdigit_str(str))
+	if (!trimmed_arg || *str == '\0' || !ft_isdigit_str(str))
 	{
 		free(trimmed_arg);
 		*error_status = 2;
@@ -162,7 +123,8 @@ static int	check_numeric_argument(const char *arg, long long *num,
 	}
 	*num = custom_atoull(str, sign, &overflow);
 	free(trimmed_arg);
-	if (overflow || (*num == LLONG_MIN && sign != -1) || (*num == LLONG_MAX && sign != 1))
+	if (overflow || (*num == LLONG_MIN && sign != -1) ||
+		(*num == LLONG_MAX && sign != 1))
 	{
 		*error_status = 2;
 		return (handle_exit_errors(2, (char *)arg, shell));
