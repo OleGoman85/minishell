@@ -1,19 +1,30 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   execute.c                                          :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: ogoman <ogoman@student.hive.fi>            +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2024/07/24 07:39:35 by ogoman            #+#    #+#             */
+/*   Updated: 2024/07/24 08:02:13 by ogoman           ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
 
 #include "minishell.h"
 
 /**
- * @brief Выполняет узел абстрактного синтаксического дерева (AST).
+ * @brief Executes an Abstract Syntax Tree (AST) node.
  *
- * Эта функция обрабатывает и выполняет узел AST в зависимости от его типа.
- * Возможные типы узлов включают логические операции, конвейеры, подкоманды,
- * перенаправления и команды. Функция вызывает соответствующие функции
- * для выполнения каждого типа узла.
+ * This function processes and executes an AST node based on its type.
+ * Possible node types include logical operations, pipelines, subshells,
+ * redirections, and commands. The function calls the appropriate functions
+ * to execute each type of node.
  *
- * @param ast_node Указатель на узел AST для выполнения.
- * @param op_status Статус операции, определяющий,
-	следует ли завершить работу после выполнения.
- * @param shell Указатель на структуру оболочки для управления состоянием и памятью.
- * @return Статус выполнения узла (код завершения).
+ * @param ast_node Pointer to the AST node to be executed.
+ * @param op_status Operation status that determines whether to terminate
+ *                  after execution.
+ * @param shell Pointer to the shell structure for managing state and memory.
+ * @return The exit status of the node (exit code).
  */
 int	run_cmd(t_ast *ast_node, t_op_status op_status, t_shell *shell)
 {
@@ -23,18 +34,18 @@ int	run_cmd(t_ast *ast_node, t_op_status op_status, t_shell *shell)
 	if (ast_node == NULL)
 		return (result);
 	if (ast_node->node_type == LOGIC)
-		result = process_logic(&ast_node->node_content.logic, shell);
+		result = process_logic(&ast_node->u_node_cont.logic, shell);
 	else if (ast_node->node_type == PIPE)
 		result = process_pipeline(ast_node, shell);
 	else if (ast_node->node_type == BRACE)
-		result = process_brace(&ast_node->node_content.brace, shell);
+		result = process_brace(&ast_node->u_node_cont.brace, shell);
 	else if (ast_node->node_type == REDIR || ast_node->node_type == CMD)
 	{
 		resolve_ast_content(ast_node, shell);
 		if (ast_node->node_type == REDIR)
-			result = process_redirection(&ast_node->node_content.redir, shell);
+			result = process_redirection(&ast_node->u_node_cont.redir, shell);
 		else if (ast_node->node_type == CMD)
-			result = process_cmd(&ast_node->node_content.cmd, op_status,
+			result = process_cmd(&ast_node->u_node_cont.cmd, op_status,
 					shell);
 	}
 	else
@@ -44,28 +55,25 @@ int	run_cmd(t_ast *ast_node, t_op_status op_status, t_shell *shell)
 	return (result);
 }
 
-
 /**
- * @brief Обрабатывает завершение дочернего процесса, возвращая соответствующий
- *        статус.
+ * @brief Handles the exit status of a child process, returning the appropriate
+ *        status code.
  *
- * Эта функция проверяет статус завершения дочернего процесса. Если процесс
- * завершился нормально, возвращается его статус выхода. Если процесс был
- * прерван сигналом, функция записывает сообщение об этом и, если необходимо,
- * добавляет новую строку в вывод. В случае прерывания сигнала SIGQUIT или
- * SIGINT добавляется новая строка, если она еще не была добавлена.
+ * This function checks the exit status of a child process. If the process
+ * exited normally, its exit status is returned. If the process was terminated
+ * by a signal, the function writes an error message and, if necessary, adds
+ * a newline to the output. If the signal was SIGQUIT or SIGINT, a newline
+ * is added if it hasn't been added already.
  *
- * @param child_status Статус завершения дочернего процесса.
- * @param printed_newline Указатель на флаг, указывающий, была ли добавлена
- *                        новая строка.
- * @param shell Указатель на структуру оболочки для управления памятью и
- *              выводом.
- * @return Статус завершения процесса. В случае нормального завершения
- *         возвращается его статус выхода. В случае прерывания сигнала
- *         возвращается 128 + номер сигнала. Если статус не соответствует ни
- *         одному из этих условий, возвращается EXIT_FAILURE.
+ * @param child_status The exit status of the child process.
+ * @param printed_newline Pointer to a flag indicating whether a newline has
+ *                        been added.
+ * @param shell Pointer to the shell structure for managing memory and output.
+ * @return The exit status of the process. If the process was terminated by
+ *         a signal, returns 128 + signal number. If the status does not match
+ *         any of these conditions, returns EXIT_FAILURE.
  */
-int	handle_exit_signal(int child_status, bool *printed_newline, t_shell *shell) // переделать страхолюдину
+int	handle_exit_signal(int child_status, bool *printed_newline, t_shell *shell)
 {
 	int		exit_signal;
 	bool	need_newline;
@@ -94,51 +102,54 @@ int	handle_exit_signal(int child_status, bool *printed_newline, t_shell *shell) 
 	return (WEXITSTATUS(child_status));
 }
 
-
 /**
- * @brief Выполняет команду,
-	вызывая встроенные функции или создавая новый процесс.
+ * @brief Executes a command by calling built-in functions or creating a new
+ *        process.
  *
- * Эта функция выполняет команду, используя встроенные функции оболочки или
- * создавая новый процесс для внешней команды. Если команда встроенная, она
- * вызывается напрямую. Если команда требует нового процесса и терминальный
- * статус установлен как OP_TERMINATE,
-	функция использует execute_program для выполнения
- * команды в текущем процессе. В противном случае, функция создает новый процесс
- * с помощью create_process, устанавливает стандартные сигналы и выполняет команду в
- * дочернем процессе.
+ * This function executes a command by either calling built-in shell
+ * functions
+ * or creating a new process for external commands. If the command is a 
+ * built-in
+ * command, it is executed directly. If the command requires a new process 
+ * and
+ * the termination status is set to OP_TERMINATE, the function uses
+ *  execute_program
+ * to run the command in the current process. Otherwise, the function 
+ * creates a
+ * new process using create_process, sets standard signals, and executes the
+ * command in the child process.
  *
- * @param cmd Указатель на структуру команды t_cmd,
-	содержащую аргументы команды.
- * @param term_status Статус выполнения команды,
-	определяющий завершение процесса.
- * @param shell Указатель на структуру t_shell, содержащую параметры и состояние
- *        оболочки.
-
-	* @return Возвращает статус выполнения команды: статус выхода встроенной функции,
- *         код выхода дочернего процесса или код ошибки.
+ * @param cmd Pointer to the t_cmd structure containing command arguments.
+ * @param term_status Status of the command execution, determining process 
+ * termination.
+ * @param shell Pointer to the t_shell structure containing shell parameters 
+ * and state.
+ * @return Returns the execution status of the command: the exit status of a
+ *  built-in
+ *         function, the exit code of a child process, or an error code.
  */
 int	process_cmd(t_cmd *cmd, t_op_status term_status, t_shell *shell)
 {
-	int			exec_status;
 	t_bltn_func	function;
+	int			exec_status;
 
 	if (!cmd->cmd_args[0])
 		return (EXIT_SUCCESS);
-	if ((function = fetch_builtin_cmd(cmd->cmd_args[0])))
+	function = fetch_builtin_cmd(cmd->cmd_args[0]);
+	if (function)
 		return (function(cmd, shell));
 	if (term_status == OP_TERMINATE)
 	{
-		execute_program(find_executable_path(cmd->cmd_args[0], shell), cmd->cmd_args,
-			create_ev_array(shell), shell);
+		execute_program(find_executable_path(cmd->cmd_args[0], shell),
+			cmd->cmd_args, create_ev_array(shell), shell);
 		return (EXIT_FAILURE);
 	}
 	if (create_process(shell) == 0)
 	{
 		shell->is_main = false;
 		signals_default();
-		execute_program(find_executable_path(cmd->cmd_args[0], shell), cmd->cmd_args,
-			create_ev_array(shell), shell);
+		execute_program(find_executable_path(cmd->cmd_args[0], shell),
+			cmd->cmd_args, create_ev_array(shell), shell);
 		exit(EXIT_FAILURE);
 	}
 	wait_for_child(&exec_status, shell);
@@ -146,16 +157,16 @@ int	process_cmd(t_cmd *cmd, t_op_status term_status, t_shell *shell)
 }
 
 /**
- * @brief Выполняет логическую операцию AND или OR между двумя командами.
+ * @brief Executes a logical AND or OR operation between two commands.
  *
- * Эта функция выполняет первую команду и сохраняет ее статус. В зависимости
- * от логической операции (AND или OR) и статуса выполнения первой команды,
- * она может выполнить вторую команду и вернуть ее статус.
+ * This function executes the first command and saves its status. Depending
+ * on the logical operation (AND or OR) and the status of the first command,
+ * it may execute the second command and return its status.
  *
- * @param logic Указатель на структуру логической операции,
-	содержащую две команды и тип операции.
- * @param shell Указатель на структуру shell для управления процессом.
- * @return Код завершения выполнения последней команды.
+ * @param logic Pointer to the logic operation structure containing two commands
+ *              and the type of operation.
+ * @param shell Pointer to the shell structure for managing process execution.
+ * @return The exit status of the last command executed.
  */
 int	process_logic(t_logic *logic, t_shell *shell)
 {
@@ -169,35 +180,34 @@ int	process_logic(t_logic *logic, t_shell *shell)
 	return (cmd_status);
 }
 
-
 /**
- * @brief Выполняет команду в скобках (brace) в отдельном процессе.
+ * @brief Executes a command in braces (subshell) in a separate process.
  *
- * Эта функция создает дочерний процесс с помощью create_process и выполняет в нем 
- * команду, заключенную в скобки. Родительский процесс ожидает завершения 
- * дочернего процесса и обрабатывает его статус завершения.
+ * This function creates a child process using create_process and executes the
+ * command enclosed in braces in that process. The parent process waits for the
+ * child process to finish and handles its exit status.
  *
- * @param brace Указатель на структуру brace, содержащую команду.
- * @param shell Указатель на структуру shell для управления процессом.
- * @return Код завершения выполнения команды.
+ * @param brace Pointer to the brace structure containing the command.
+ * @param shell Pointer to the shell structure for managing process execution.
+ * @return The exit status of the executed command.
  */
-int process_brace(t_brace *brace, t_shell *shell)
+int	process_brace(t_brace *brace, t_shell *shell)
 {
-    int cmd_status;
-    bool is_parent;
+	int		cmd_status;
+	bool	is_parent;
 
-    cmd_status = EXIT_FAILURE;
-    is_parent = (create_process(shell) != 0);
-    if (is_parent)
-    {
-        wait_for_child(&cmd_status, shell);
-        cmd_status = handle_exit_signal(cmd_status, NULL, shell);
-    }
-    else
-    {
-        shell->is_main = false;
-        signals_default();
-        run_cmd(brace->command, OP_TERMINATE, shell);
-    }
-    return cmd_status;
+	cmd_status = EXIT_FAILURE;
+	is_parent = (create_process(shell) != 0);
+	if (is_parent)
+	{
+		wait_for_child(&cmd_status, shell);
+		cmd_status = handle_exit_signal(cmd_status, NULL, shell);
+	}
+	else
+	{
+		shell->is_main = false;
+		signals_default();
+		run_cmd(brace->command, OP_TERMINATE, shell);
+	}
+	return (cmd_status);
 }

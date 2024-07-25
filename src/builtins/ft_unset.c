@@ -1,10 +1,21 @@
-#include "minishell.h"
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   ft_unset.c                                         :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: ogoman <ogoman@student.hive.fi>            +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2024/07/24 07:13:13 by ogoman            #+#    #+#             */
+/*   Updated: 2024/07/24 07:17:08 by ogoman           ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
 
+#include "minishell.h"
 
 int	ft_unset(t_cmd *cmd, t_shell *shell)
 {
-	t_list *ev;
-	char **args;
+	char	**args;
+	t_list	*ev;
 
 	args = cmd->cmd_args + 1;
 	while (*args != NULL)
@@ -16,25 +27,44 @@ int	ft_unset(t_cmd *cmd, t_shell *shell)
 	}
 	return (EXIT_SUCCESS);
 }
-// Пропуск первого аргумента:
-
-// args = cmd->cmd_args + 1; — Начинает обработку со второго элемента в списке аргументов команды.
-// Цикл по аргументам:
-
-// Проходит по каждому аргументу в cmd->cmd_args, пока не встретит NULL.
-// Поиск переменной окружения:
-
-// ev = get_ev(*args, shell->ev_list); — Ищет переменную окружения с именем, указанным в текущем аргументе.
-// Удаление переменной:
-
-// Если переменная найдена, она удаляется из списка shell->ev_list с помощью del_node(&ev, &(shell->ev_list), free_ev, true);.
-// Переход к следующему аргументу:
-
-// args++; — Переходит к следующему аргументу в списке.
-// Возврат успешного завершения:
-
-// return EXIT_SUCCESS; — Возвращает EXIT_SUCCESS после завершения обработки всех аргументов.
-// Вспомогательные функции
-// get_ev — Ищет переменную окружения по имени.
-// del_node — Удаляет узел из списка и освобождает память.
-// free_ev — Освобождает память, выделенную под переменную окружения.
+/**
+ * ft_unset - Removes specified environment variables from 
+ *     the shell's environment.
+ *
+ * @param t_cmd *cmd: Pointer to the command structure containing 
+ * the command and its arguments.
+ * @param t_shell *shell: Pointer to the shell structure representing 
+ * the current state of the shell, including the environment variable list.
+ *
+ * This function processes the `unset` command. It iterates over each 
+ * argument provided (each representing an environment 
+ * variable name to be unset),
+ * finds the corresponding environment variable in the shell's environment 
+ * variable list, and removes it if it exists.
+ * 
+ * Steps:
+ * 1. Extract Arguments:
+ *    - Retrieve the command arguments, skipping the first argument 
+ * (which is the command itself, typically "unset").
+ * 
+ * 2. Iterate Through Arguments:
+ *    - Loop through each argument provided to the `unset` command.
+ * 
+ * 3. Find Environment Variable:
+ *    - For each argument, use the `get_ev` function to locate the 
+ * corresponding environment variable in the shell's environment list.
+ * 
+ * 4. Delete Environment Variable:
+ *    - If the environment variable is found (`ev` is not `NULL`), 
+ * call the `del_node` function to remove the environment variable 
+ * node from the list and free its associated memory.
+ * 
+ * 5. Continue Until All Arguments Processed:
+ *    - Repeat the process for all provided environment variable names.
+ * 
+ * 6. Return Success:
+ *    - Return `EXIT_SUCCESS`, indicating that the `unset` operation 
+ * completed successfully.
+ * 
+ * @return int: Returns `EXIT_SUCCESS` to indicate success.
+ */

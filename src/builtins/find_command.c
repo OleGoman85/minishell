@@ -1,14 +1,26 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   find_command.c                                     :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: ogoman <ogoman@student.hive.fi>            +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2024/07/24 07:36:36 by ogoman            #+#    #+#             */
+/*   Updated: 2024/07/24 07:37:48 by ogoman           ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
 
 #include "minishell.h"
 
 /**
- * @brief Инициализирует массив встроенных команд.
+ * @brief Initializes the array of built-in commands.
  *
- * Эта функция заполняет массив встроенных команд `commands` именами
- * команд и соответствующими функциями. Массив завершается элементом с NULL.
+ * This function fills the `commands` array with built-in command names and
+ * their corresponding functions. The array is terminated with an element where
+ * both the command name and function pointer are NULL.
  *
- * @param commands Указатель на массив структур команд, который будет
- * заполнен встроенными командами и функциями.
+ * @param commands Pointer to the array of command structures to be filled
+ * with built-in commands and their functions.
  */
 void	init_builtins(t_bltn_cmd *commands)
 {
@@ -31,15 +43,19 @@ void	init_builtins(t_bltn_cmd *commands)
 }
 
 /**
- * @brief Находит и возвращает функцию встроенной команды по ее имени.
+ * @brief Finds and returns the function of a built-in command by
+ * its name.
  *
- * Эта функция ищет встроенную команду по ее имени в массиве команд.
- * Если команда найдена, возвращается указатель на соответствующую функцию.
- * Если команда не найдена, возвращается NULL.
+ * This function searches for a built-in command by its name in the
+ * commands array.
+ * If the command is found, it returns a pointer to the corresponding
+ * function.
+ * If the command is not found, it returns NULL.
  *
- * @param command Имя команды, которую нужно найти.
- * @return Указатель на функцию встроенной команды, или NULL, если команда
- * не найдена.
+ * @param command The name of the command to find.
+ * @return Pointer to the function of the built-in command, or NULL if
+ * the command
+ * is not found.
  */
 t_bltn_func	fetch_builtin_cmd(char *command)
 {

@@ -1,6 +1,29 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   env_vars.c                                         :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: ogoman <ogoman@student.hive.fi>            +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2024/07/24 09:28:53 by ogoman            #+#    #+#             */
+/*   Updated: 2024/07/24 09:32:22 by ogoman           ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include "minishell.h"
 
-
+/**
+ * @brief Creates a list of environment variables from an array of strings.
+ *
+ * This function initializes a list of environment variables from an array 
+ * of strings in the format `NAME=VALUE`.
+ * It also sets a default `PATH` if not already present and extracts the 
+ * `HOME` directory to set in the shell structure.
+ *
+ * @param env_vars Array of environment variable strings.
+ * @param shell Pointer to the shell structure for managing memory.
+ * @return Pointer to the list of environment variables.
+ */
 t_list	*create_ev_list(char **env_vars, t_shell *shell)
 {
 	char	*equals_ptr;
@@ -27,6 +50,17 @@ t_list	*create_ev_list(char **env_vars, t_shell *shell)
 		shell->home_dir = NULL;
 	return (ev_list);
 }
+/**
+ * @brief Adds a new environment variable to the list.
+ *
+ * This function creates a new environment variable structure and adds it to 
+ * the end of the environment variable list.
+ *
+ * @param name Name of the environment variable.
+ * @param value Value of the environment variable.
+ * @param ev_list Pointer to the list of environment variables.
+ * @param shell Pointer to the shell structure for managing memory.
+ */
 
 void	add_ev(char *name, char *value, t_list **ev_list, t_shell *shell)
 {
@@ -39,12 +73,25 @@ void	add_ev(char *name, char *value, t_list **ev_list, t_shell *shell)
 		ev->value = strdup_tracked(value, UNTRACKED, shell);
 	lstadd_back_tracked(ev, ev_list, UNTRACKED, shell);
 }
+/**
+ * @brief Changes the value of an existing environment variable.
+ *
+ * This function updates the value of an environment variable in the list. It 
+ * can either replace the old value
+ * or append the new value to the existing one based on the `retain_old` flag.
+ *
+ * @param ev_ptr Pointer to the environment variable list node.
+ * @param new_val New value to set for the environment variable.
+ * @param retain_old Flag indicating whether to append the new value to the 
+ * old one.
+ * @param shell Pointer to the shell structure for managing memory.
+ */
 
 void	change_ev_val(t_list *ev_ptr, char *new_val,
 						bool retain_old, t_shell *shell)
 {
 	t_env_var	*ev;
-	char	*old_val;
+	char		*old_val;
 
 	ev = (t_env_var *)(ev_ptr->content);
 	old_val = ev->value;
@@ -57,7 +104,17 @@ void	change_ev_val(t_list *ev_ptr, char *new_val,
 	free(old_val);
 }
 
-
+/**
+ * @brief Retrieves the environment variable list node with a specified name.
+ *
+ * This function searches the environment variable list for a node with 
+ * the given name.
+ *
+ * @param target Name of the environment variable to find.
+ * @param ev_list Pointer to the list of environment variables.
+ * @return Pointer to the environment variable list node if found, 
+ * otherwise NULL.
+ */
 t_list	*get_ev(char *target, t_list *ev_list)
 {
 	t_env_var	*current_ev;
@@ -72,6 +129,15 @@ t_list	*get_ev(char *target, t_list *ev_list)
 	return (NULL);
 }
 
+/**
+ * @brief Retrieves the name of an environment variable from a list node.
+ *
+ * This function gets the name of the environment variable from the 
+ * specified list node.
+ *
+ * @param ev_node Pointer to the environment variable list node.
+ * @return Name of the environment variable, or NULL if the node is NULL.
+ */
 char	*get_ev_name(t_list *ev_node)
 {
 	if (!ev_node)
@@ -79,6 +145,15 @@ char	*get_ev_name(t_list *ev_node)
 	return (((t_env_var *)(ev_node->content))->name);
 }
 
+/**
+ * @brief Retrieves the value of an environment variable from a list node.
+ *
+ * This function gets the value of the environment variable from the
+ *  specified list node.
+ *
+ * @param ev_node Pointer to the environment variable list node.
+ * @return Value of the environment variable, or NULL if the node is NULL.
+ */
 char	*get_ev_value(t_list *ev_node)
 {
 	if (!ev_node)
@@ -86,9 +161,17 @@ char	*get_ev_value(t_list *ev_node)
 	return (((t_env_var *)(ev_node->content))->value);
 }
 
-void	free_ev(void *data) // to ev utils
+/**
+ * @brief Frees the memory allocated for an environment variable.
+ *
+ * This function deallocates memory for the name and value of an environment 
+ * variable and then frees the environment variable structure.
+ *
+ * @param data Pointer to the environment variable structure to be freed.
+ */
+void	free_ev(void *data)
 {
-	t_env_var *ev;
+	t_env_var	*ev;
 
 	if (data != NULL)
 	{

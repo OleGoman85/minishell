@@ -1,31 +1,41 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   nodes.c                                            :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: ogoman <ogoman@student.hive.fi>            +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2024/07/24 08:30:59 by ogoman            #+#    #+#             */
+/*   Updated: 2024/07/24 08:33:04 by ogoman           ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
 
 #include "minishell.h"
 
 /**
- * build_node_logic
- * @brief Создает AST узел для логической операции и инициализирует его.
+ * @brief Creates an AST node for a logical operation and initializes it.
  *
-
-	* Эта функция принимает два выражения (first_expr и second_expr) и тип логической операции (op).
- * Если хотя бы одно из выражений равно NULL,
-	функция записывает синтаксическую ошибку и возвращает NULL.
+ * This function takes two expressions (`first_expr` and `second_expr`) and a 
+ * logical operation type (`op`).
+ * If either of the expressions is NULL, the function records a syntax error 
+ * and returns NULL.
  *
- * 1. Проверяет, что оба выражения (first_expr и second_expr) не равны NULL.
- * 2. Если хотя бы одно из выражений равно NULL,
-	записывает синтаксическую ошибку и возвращает NULL.
- * 3. Выделяет память для нового узла типа LOGIC.
- * 4. Инициализирует новый узел,
-	устанавливая его тип LOGIC и связывая логическую операцию (op)
- *    с полями first_expr и second_expr.
- * 5. Возвращает созданный узел.
+ * 1. Checks that both expressions (`first_expr` and `second_expr`) are 
+ * not NULL.
+ * 2. If either expression is NULL, records a syntax error and returns NULL.
+ * 3. Allocates memory for a new node of type LOGIC.
+ * 4. Initializes the new node, setting its type to LOGIC and linking the 
+ * logical operation (`op`)
+ *    with the `first_expr` and `second_expr` fields.
+ * 5. Returns the created node.
  *
- * @param first_expr Указатель на узел, представляющий первое выражение.
- * @param op Тип логической операции.
- * @param second_expr Указатель на узел, представляющий второе выражение.
- * @param shell Структура оболочки,
-	используемая для управления памятью и синтаксическими ошибками.
-
-	* @return Указатель на созданный узел логической операции или NULL в случае ошиб��и.
+ * @param first_expr Pointer to the node representing the first expression.
+ * @param op Type of the logical operation.
+ * @param second_expr Pointer to the node representing the second expression.
+ * @param shell Shell structure used for memory management and syntax 
+ * error handling.
+ * @return Pointer to the created logical operation node or NULL in case 
+ * of an error.
  */
 t_ast	*build_node_logic(t_ast *first_expr, t_tkn_type op, t_ast *second_expr,
 		t_shell *shell)
@@ -38,9 +48,9 @@ t_ast	*build_node_logic(t_ast *first_expr, t_tkn_type op, t_ast *second_expr,
 		if (logic_node)
 		{
 			logic_node->node_type = LOGIC;
-			logic_node->node_content.logic.logic_op = op;
-			logic_node->node_content.logic.first = first_expr;
-			logic_node->node_content.logic.second = second_expr;
+			logic_node->u_node_cont.logic.logic_op = op;
+			logic_node->u_node_cont.logic.first = first_expr;
+			logic_node->u_node_cont.logic.second = second_expr;
 		}
 		return (logic_node);
 	}
@@ -49,20 +59,19 @@ t_ast	*build_node_logic(t_ast *first_expr, t_tkn_type op, t_ast *second_expr,
 }
 
 /**
- * build_node_cmd
- * @brief Создает AST узел для команды и инициализирует его.
+ * @brief Creates an AST node for a command and initializes it.
  *
- * Эта функция принимает массив аргументов команды (cmd_args).
- * Выделяет память для нового узла типа CMD и инициализирует его.
+ * This function takes an array of command arguments (`cmd_args`).
+ * It allocates memory for a new node of type CMD and initializes it.
  *
-* 1. Выделяет память для нового узла типа CMD с использованием функции setup_node.
-* 2. Инициализирует новый узел,
-	устанавливая его тип CMD и связывая аргументы команды (cmd_args).
- * 3. Возвращает созданный узел.
+ * 1. Allocates memory for a new node of type CMD using the setup_node function.
+ * 2. Initializes the new node, setting its type to CMD and linking the command
+ * arguments (`cmd_args`).
+ * 3. Returns the created node.
  *
- * @param cmd_args Массив аргументов команды.
- * @param shell Структура оболочки, используемая для управления памятью.
- * @return Указатель на созданный узел команды или NULL в случае ошибки.
+ * @param cmd_args Array of command arguments.
+ * @param shell Shell structure used for memory management.
+ * @return Pointer to the created command node or NULL in case of an error.
  */
 t_ast	*build_node_cmd(char **cmd_args, t_shell *shell)
 {
@@ -72,33 +81,33 @@ t_ast	*build_node_cmd(char **cmd_args, t_shell *shell)
 	if (cmd_node)
 	{
 		cmd_node->node_type = CMD;
-		cmd_node->node_content.cmd.cmd_args = cmd_args;
+		cmd_node->u_node_cont.cmd.cmd_args = cmd_args;
 	}
 	return (cmd_node);
 }
 
 /**
- * build_node_pipe
- * @brief Создает AST узел для конвейера (pipe) и инициализирует его.
+ * @brief Creates an AST node for a pipe and initializes it.
  *
- * Эта функция принимает два узла (input_node и output_node), которые будут
- * соединены с помощью конвейера. Если оба узла равны NULL, функция
- * записывает синтаксическую ошибку и возвращает NULL.
+ * This function takes two nodes (`input_node` and `output_node`) that will 
+ * be connected via a pipe.
+ * If either node is NULL, the function records a syntax error and returns 
+ * NULL.
  *
- * 1. Проверяет, что оба узла (input_node и output_node) не равны NULL.
- * 2. Если хотя бы один из узлов равен NULL,
-	записывает синтаксическую ошибку и возвращает NULL.
- * 3. Выделяет память для нового узла типа PIPE.
- * 4. Инициализирует новый узел, устанавливая его тип PIPE и связывая входной
- *    и выходной узлы с полями input_side и output_side соответственно.
- * 5. Возвращает созданный узел.
+ * 1. Checks that both nodes (`input_node` and `output_node`) are not NULL.
+ * 2. If either node is NULL, records a syntax error and returns NULL.
+ * 3. Allocates memory for a new node of type PIPE.
+ * 4. Initializes the new node, setting its type to PIPE and linking the 
+ * input and output nodes
+ *    with the `input_side` and `output_side` fields, respectively.
+ * 5. Returns the created node.
  *
- * @param input_node Указатель на узел,
-	представляющий входную сторону конвейера.
- * @param output_node Указатель на узел,
-	представляющий выходную сторону конвейера.
- * @param shell Структура оболочки
- * @return Указатель на созданный узел конвейера или NULL в случае ошибки.
+ * @param input_node Pointer to the node representing the input side of 
+ * the pipe.
+ * @param output_node Pointer to the node representing the output side 
+ * of the pipe.
+ * @param shell Shell structure.
+ * @return Pointer to the created pipe node or NULL in case of an error.
  */
 t_ast	*build_node_pipe(t_ast *input_node, t_ast *output_node, t_shell *shell)
 {
@@ -110,8 +119,8 @@ t_ast	*build_node_pipe(t_ast *input_node, t_ast *output_node, t_shell *shell)
 		if (pipe_node)
 		{
 			pipe_node->node_type = PIPE;
-			pipe_node->node_content.pipe.input_side = input_node;
-			pipe_node->node_content.pipe.output_side = output_node;
+			pipe_node->u_node_cont.pipe.input_side = input_node;
+			pipe_node->u_node_cont.pipe.output_side = output_node;
 		}
 		return (pipe_node);
 	}
@@ -119,14 +128,15 @@ t_ast	*build_node_pipe(t_ast *input_node, t_ast *output_node, t_shell *shell)
 }
 
 /**
- * @brief Создает узел AST для редиректа.
+ * @brief Creates an AST node for a redirection.
  *
- * @param redir_type Тип редиректа.
- * @param token Токен, содержащий имя файла.
- * @param child_node Узел команды, к которому применяется редирект.
- * @param shell Указатель на структуру оболочки для управления памятью.
-
-	* @return Указатель на созданный узел AST для редиректа или NULL в случае ошибки.
+ * @param redir_type Type of the redirection.
+ * @param token Token containing the filename.
+ * @param child_node Node representing the command to which the redirection 
+ * is applied.
+ * @param shell Pointer to the shell structure for memory management.
+ * @return Pointer to the created AST node for the redirection or NULL in 
+ * case of an error.
  */
 t_ast	*build_node_redir(t_tkn_type redir_type, t_list *token,
 		t_ast *child_node, t_shell *shell)
@@ -143,9 +153,9 @@ t_ast	*build_node_redir(t_tkn_type redir_type, t_list *token,
 			if (redir_node)
 			{
 				redir_node->node_type = REDIR;
-				redir_node->node_content.redir.filename = filename;
-				redir_node->node_content.redir.redir_type = redir_type;
-				redir_node->node_content.redir.command = child_node;
+				redir_node->u_node_cont.redir.filename = filename;
+				redir_node->u_node_cont.redir.redir_type = redir_type;
+				redir_node->u_node_cont.redir.command = child_node;
 			}
 			return (redir_node);
 		}
@@ -155,16 +165,16 @@ t_ast	*build_node_redir(t_tkn_type redir_type, t_list *token,
 }
 
 /**
- * @brief Создает узел AST для группирующей команды (в скобках).
+ * @brief Creates an AST node for a grouping command (in braces).
  *
- * @param inner_node Узел AST, представляющий команду внутри скобок.
- * @param shell Указатель на структуру оболочки для управления памятью.
-
-	* @return Указатель на созданный узел AST для группы команд или NULL в случае ошибки.
+ * @param inner_node AST node representing the command inside the braces.
+ * @param shell Pointer to the shell structure for memory management.
+ * @return Pointer to the created AST node for the grouping command or NULL
+ *  in case of an error.
  */
 t_ast	*build_node_brace(t_ast *inner_node, t_shell *shell)
 {
-	t_ast *brace_node;
+	t_ast	*brace_node;
 
 	if (inner_node != NULL)
 	{
@@ -172,7 +182,7 @@ t_ast	*build_node_brace(t_ast *inner_node, t_shell *shell)
 		if (brace_node)
 		{
 			brace_node->node_type = BRACE;
-			brace_node->node_content.brace.command = inner_node;
+			brace_node->u_node_cont.brace.command = inner_node;
 		}
 		return (brace_node);
 	}

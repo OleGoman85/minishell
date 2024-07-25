@@ -1,5 +1,27 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   ft_echo.c                                          :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: ogoman <ogoman@student.hive.fi>            +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2024/07/24 07:34:05 by ogoman            #+#    #+#             */
+/*   Updated: 2024/07/24 07:35:59 by ogoman           ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include "minishell.h"
 
+/**
+ * @brief Returns the replacement character for an escape sequence.
+ *
+ * This function takes a character representing an escape sequence and returns
+ * the corresponding character. For example, '\n' is replaced with a newline
+ * character, '\r' with a carriage return, and '\t' with a tab.
+ *
+ * @param c The character representing the escape sequence.
+ * @return The replacement character for the escape sequence.
+ */
 static char	get_escape_replacement(char c)
 {
 	if (c == 'n')
@@ -10,16 +32,19 @@ static char	get_escape_replacement(char c)
 		return ('\t');
 	return (c);
 }
+
 /**
- * @brief Обрабатывает escape-последовательности в строке.
+ * @brief Processes escape sequences in a string.
  *
- * Эта функция принимает строку, обрабатывает все escape-последовательности
- * и возвращает новую строку с заменёнными символами. Память для новой строки
- * выделяется с использованием функции calloc_tracked.
+ * This function takes a string, processes all escape sequences in it, 
+ * and returns
+ * a new string with the characters replaced. Memory for the new string 
+ * is allocated
+ * using the `calloc_tracked` function.
  *
- * @param arg Входная строка для обработки.
- * @param shell Указатель на структуру данных оболочки.
- * @return Новая строка с заменёнными escape-последовательностями.
+ * @param arg The input string to process.
+ * @param shell Pointer to the shell data structure.
+ * @return A new string with escape sequences replaced.
  */
 static char	*process_escape_sequences(const char *arg, t_shell *shell)
 {
@@ -46,18 +71,19 @@ static char	*process_escape_sequences(const char *arg, t_shell *shell)
 	return (result);
 }
 
-
 /**
- * @brief Проверяет наличие флага в аргументах команды.
+ * @brief Checks for the presence of a flag among command arguments.
  *
- * Эта функция проверяет, есть ли флаг (символ) среди аргументов команды,
- * начиная с заданного индекса. Если флаг найден, индекс увеличивается,
- * и функция возвращает true.
+ * This function checks if a flag (character) is present among the 
+ * command arguments,
+ * starting from a specified index. If the flag is found, the index 
+ * is incremented,
+ * and the function returns true.
  *
- * @param cmd_args Массив строковых аргументов команды.
- * @param index Указатель на индекс, с которого начинается проверка.
- * @param flag Символ флага для поиска.
- * @return true, если флаг найден, иначе false.
+ * @param cmd_args Array of command arguments.
+ * @param index Pointer to the index from which to start checking.
+ * @param flag The flag character to look for.
+ * @return true if the flag is found, otherwise false.
  */
 static bool	has_flag(char **cmd_args, int *index, char flag)
 {
@@ -81,17 +107,18 @@ static bool	has_flag(char **cmd_args, int *index, char flag)
 	return (flag_found);
 }
 
-
 /**
- * @brief Выполняет команду echo с обработкой escape-последовательностей.
+ * @brief Executes the echo command with escape sequence processing.
  *
- * Эта функция выполняет команду echo, обрабатывая escape-последовательности
- * в аргументах команды и выводя их на стандартный вывод. Если аргумент
- * команды содержит флаг -n, вывод новой строки в конце отключается.
+ * This function executes the echo command, processing escape 
+ * sequences in the
+ * command arguments and writing them to standard output. If the 
+ * command arguments
+ * contain the -n flag, it disables the newline output at the end.
  *
- * @param cmd Указатель на структуру команды.
- * @param shell Указатель на структуру данных оболочки.
- * @return EXIT_SUCCESS в случае успешного выполнения команды.
+ * @param cmd Pointer to the command structure.
+ * @param shell Pointer to the shell data structure.
+ * @return EXIT_SUCCESS upon successful execution of the command.
  */
 int	ft_echo(t_cmd *cmd, t_shell *shell)
 {

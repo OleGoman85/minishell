@@ -1,17 +1,27 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   utils.c                                            :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: ogoman <ogoman@student.hive.fi>            +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2024/07/25 08:02:52 by ogoman            #+#    #+#             */
+/*   Updated: 2024/07/25 08:08:47 by ogoman           ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
 
 #include "minishell.h"
 
-
 /**
- * @brief Добавляет новую строку к массиву строк.
+ * @brief Adds a new string to an array of strings.
  *
- * Эта функция сначала подсчитывает количество строк в массиве,
- * затем создает новый массив с дополнительным местом для новой строки,
- * копирует строки из старого массива в новый и добавляет новую строку.
+ * This function first counts the number of strings in the existing array,
+ * then creates a new array with space for one additional string,
+ * copies the existing strings into the new array, and adds the new string.
  *
- * @param args Указатель на массив строк.
- * @param str Новая строка для добавления.
- * @param shell Указатель на структуру оболочки для управления памятью.
+ * @param args Pointer to the array of strings.
+ * @param str New string to be added.
+ * @param shell Pointer to the shell structure for memory management.
  */
 void	append_str(char ***args, char *str, t_shell *shell)
 {
@@ -38,21 +48,19 @@ void	append_str(char ***args, char *str, t_shell *shell)
 	*args = res_array;
 }
 
-
 /**
- * @brief Ожидает завершения дочернего процесса и обрабатывает ошибки.
+ * @brief Waits for a child process to terminate and handles errors.
  *
- * Эта функция вызывает стандартную функцию wait для ожидания завершения
- * дочернего процесса. В случае ошибки (если wait возвращает -1), функция
-
-	* вызывает exit_on_sys_error для вывода сообщения об ошибке и завершения программы.
+ * This function uses the `wait` system call to wait for a child process
+ * to terminate.
+ * In case of an error (i.e., `wait` returns -1), it calls `exit_on_sys_error` 
+ * to print an error message and terminate the program.
  *
- * @param status Указатель на переменную,
-	в которую будет записан статус завершения
- *        дочернего процесса.
- * @param shell Указатель на структуру shell для управления процессом.
- * @return PID завершенного дочернего процесса, иначе завершает программу с
- *         сообщением об ошибке.
+ * @param status Pointer to an integer where the exit status of the child
+ * process will be stored.
+ * @param shell Pointer to the shell structure for process management.
+ * @return The PID of the terminated child process, or terminates the program
+ * with an error message.
  */
 pid_t	wait_for_child(int *status, t_shell *shell)
 {
@@ -67,17 +75,18 @@ pid_t	wait_for_child(int *status, t_shell *shell)
 }
 
 /**
- * @brief Создает канал с помощью pipe и обрабатывает ошибки.
+ * @brief Creates a pipe and handles errors.
  *
- * Эта функция вызывает стандартную функцию pipe для создания канала.
- * В случае ошибки (если pipe возвращает -1), функция вызывает
- * exit_on_sys_error для вывода сообщения об ошибке и завершения программы.
+ * This function uses the `pipe` system call to create a pipe. If an
+ * error occurs 
+ * (i.e., `pipe` returns -1), it calls `exit_on_sys_error` to print an 
+ * error message 
+ * and terminate the program.
  *
- * @param pipe_fds Массив из двух целых чисел, используемых для хранения
- *        файловых дескрипторов канала.
- * @param shell Указатель на структуру shell для управления процессом.
- * @return 0 в случае успешного выполнения, иначе завершает программу с
- *         сообщением об ошибке.
+ * @param pipe_fds Array of two integers to hold the pipe file descriptors.
+ * @param shell Pointer to the shell structure for process management.
+ * @return 0 on success, otherwise terminates the program with an error 
+ * message.
  */
 int	create_pipe(int pipe_fds[2], t_shell *shell)
 {
@@ -92,21 +101,21 @@ int	create_pipe(int pipe_fds[2], t_shell *shell)
 }
 
 /**
- * @brief Выполняет новую программу, заменяя текущий процесс.
+ * @brief Executes a new program, replacing the current process.
  *
- * Эта функция вызывает стандартную библиотечную функцию execve, которая
- * выполняет новую программу, заменяя текущий процесс. В случае ошибки
- * execve возвращает -1 и устанавливает errno. Если execve возвращает -1,
- * эта функция вызывает exit_on_sys_error для вывода сообщения об ошибке и
- * завершения программы.
+ * This function uses the `execve` system call to execute a new program,
+ * replacing
+ * the current process. If `execve` fails (returns -1), it calls 
+ * `exit_on_sys_error`
+ * to print an error message and terminate the program.
  *
- * @param path Путь к исполняемому файлу.
- * @param args Массив аргументов для исполняемого файла.
- * @param env Массив переменных окружения для нового процесса.
- * @param shell Указатель на структуру shell для управления процессом.
- * @return Эта функция не возвращает значение при успешном выполнении,
- *         так как текущий процесс будет заменен новой программой. В случае
- *         ошибки возвращает -1.
+ * @param path Path to the executable file.
+ * @param args Array of arguments for the executable file.
+ * @param env Array of environment variables for the new process.
+ * @param shell Pointer to the shell structure for process management.
+ * @return This function does not return on success as the current process 
+ * is replaced.
+ *         On failure, it returns -1.
  */
 int	execute_program(const char *path, char *const args[], char *const env[],
 		t_shell *shell)
@@ -122,15 +131,17 @@ int	execute_program(const char *path, char *const args[], char *const env[],
 }
 
 /**
- * @brief Создает новый процесс с помощью fork и обрабатывает ошибки.
+ * @brief Creates a new process using `fork` and handles errors.
  *
- * Эта функция вызывает стандартную функцию fork для создания нового
- * процесса. В случае ошибки (если fork возвращает -1), функция вызывает
- * exit_on_sys_error для вывода сообщения об ошибке и завершения программы.
+ * This function calls the `fork` system call to create a new process. 
+ * If `fork`
+ * fails (returns -1), it calls `exit_on_sys_error` to print an error 
+ * message
+ * and terminate the program.
  *
- * @param shell Указатель на структуру shell для управления процессом.
- * @return PID нового процесса в случае успешного выполнения, иначе завершает
- *         программу с сообщением об ошибке.
+ * @param shell Pointer to the shell structure for process management.
+ * @return PID of the new process on success, otherwise terminates the 
+ * program with an error message.
  */
 pid_t	create_process(t_shell *shell)
 {
@@ -145,15 +156,15 @@ pid_t	create_process(t_shell *shell)
 }
 
 /**
- * @brief Открывает каталог и обрабатывает ошибки.
+ * @brief Opens a directory and handles errors.
  *
-
-	* Эта функция пытается открыть каталог по указанному пути и проверяет наличие ошибок.
- * В случае ошибки завершает программу с сообщением об ошибке.
+ * This function tries to open a directory at the specified path and checks 
+ * for errors.
+ * If an error occurs, it terminates the program with an error message.
  *
- * @param path Путь к каталогу, который нужно открыть.
- * @param shell Указатель на структуру shell для управления памятью.
- * @return Указатель на структуру DIR, представляющую открытый каталог.
+ * @param path Path to the directory to open.
+ * @param shell Pointer to the shell structure for memory management.
+ * @return Pointer to the `DIR` structure representing the opened directory.
  */
 DIR	*open_directory(const char *path, t_shell *shell)
 {
@@ -170,16 +181,17 @@ DIR	*open_directory(const char *path, t_shell *shell)
 }
 
 /**
- * @brief Закрывает каталог с обработкой ошибок.
+ * @brief Closes a directory and handles errors.
  *
- * Эта функция пытается закрыть каталог,
-	на который указывает аргумент directory, и проверяет наличие ошибок.
- * В случае ошибки завершает программу с сообщением об ошибке.
+ * This function tries to close a directory given by its `DIR` 
+ * pointer and checks for errors.
+ * If an error occurs, it terminates the program with an error message.
  *
- * @param directory Указатель на структуру DIR, представляющую открытый каталог.
- * @param shell Указатель на структуру shell для управления памятью.
- * @return Код завершения закрытия каталога. 0 в случае успешного закрытия,
-	-1 в случае ошибки.
+ * @param directory Pointer to the `DIR` structure representing the 
+ * directory to close.
+ * @param shell Pointer to the shell structure for memory management.
+ * @return Status of the directory close operation. 0 on success, 
+ * -1 on error.
  */
 int	close_directory(DIR *directory, t_shell *shell)
 {
@@ -195,15 +207,17 @@ int	close_directory(DIR *directory, t_shell *shell)
 }
 
 /**
- * @brief Читает запись из каталога с обработкой ошибок.
+ * @brief Reads an entry from a directory and handles errors.
  *
- * Эта функция пытается прочитать следующую запись из каталога,
-	на который указывает аргумент directory, и проверяет наличие ошибок.
- * В случае ошибки завершает программу с сообщением об ошибке.
+ * This function tries to read the next entry from the given directory
+ * and checks for errors.
+ * If an error occurs, it terminates the program with an error message.
  *
- * @param directory Указатель на структуру DIR, представляющую открытый каталог.
- * @param shell Указатель на структуру shell для управления памятью.
- * @return Указатель на структуру dirent, представляющую запись в каталоге.
+ * @param directory Pointer to the `DIR` structure representing the 
+ * directory.
+ * @param shell Pointer to the shell structure for memory management.
+ * @return Pointer to the `dirent` structure representing the directory 
+ * entry.
  */
 struct dirent	*read_directory(DIR *directory, t_shell *shell)
 {
@@ -219,17 +233,17 @@ struct dirent	*read_directory(DIR *directory, t_shell *shell)
 }
 
 /**
- * @brief Открывает файл с заданными флагами и разрешениями.
+ * @brief Opens a file with specified flags and permissions.
  *
-
-	* Эта функция открывает файл по указанному пути с заданными флагами и разрешениями.
- * В случае ошибки завершает программу с сообщением об ошибке.
+ * This function opens a file at the specified path with the given flags 
+ * and permissions.
+ * If an error occurs, it terminates the program with an error message.
  *
- * @param path Путь к файлу.
- * @param mode_flags Флаги режима открытия файла.
- * @param permissions Разрешения для создания файла.
- * @param shell Указатель на структуру shell для управления процессом.
- * @return Файловый дескриптор открытого файла.
+ * @param path Path to the file.
+ * @param mode_flags Flags for opening the file.
+ * @param permissions Permissions for creating the file.
+ * @param shell Pointer to the shell structure for process management.
+ * @return File descriptor of the opened file.
  */
 int	open_file(const char *path, int mode_flags, mode_t permissions,
 		t_shell *shell)
@@ -245,14 +259,14 @@ int	open_file(const char *path, int mode_flags, mode_t permissions,
 }
 
 /**
- * @brief Закрывает файл.
+ * @brief Closes a file.
  *
- * Эта функция закрывает файл по его файловому дескриптору.
- * В случае ошибки завершает программу с сообщением об ошибке.
+ * This function closes a file given by its file descriptor.
+ * If an error occurs, it terminates the program with an error message.
  *
- * @param fd Файловый дескриптор закрываемого файла.
- * @param shell Указатель на структуру shell для управления процессом.
- * @return Статус операции закрытия файла (0 при успехе, -1 при ошибке).
+ * @param fd File descriptor of the file to close.
+ * @param shell Pointer to the shell structure for process management.
+ * @return Status of the file close operation. 0 on success, -1 on error.
  */
 int	close_file(int fd, t_shell *shell)
 {
@@ -267,16 +281,16 @@ int	close_file(int fd, t_shell *shell)
 }
 
 /**
- * @brief Получает статус файла, обрабатывая ошибки.
+ * @brief Gets the status of a file and handles errors.
  *
-
-	* Эта функция получает статус файла по его пути и заполняет структуру file_stat.
- * В случае ошибки завершает программу с сообщением об ошибке.
+ * This function obtains the status of a file specified by its path and fills
+ * the `stat` structure with information about the file. If an error occurs,
+ * it terminates the program with an error message.
  *
- * @param file_path Путь к файлу.
- * @param file_stat Указатель на структуру stat для хранения информации о файле.
- * @param shell Указатель на структуру shell для управления процессом.
- * @return Статус операции stat (0 при успехе, -1 при ошибке).
+ * @param file_path Path to the file.
+ * @param file_stat Pointer to a `stat` structure to store file information.
+ * @param shell Pointer to the shell structure for process management.
+ * @return Status of the `stat` operation. 0 on success, -1 on error.
  */
 int	get_file_status(const char *restrict file_path,
 		struct stat *restrict file_stat, t_shell *shell)
@@ -292,15 +306,15 @@ int	get_file_status(const char *restrict file_path,
 }
 
 /**
- * @brief Дублирует файловый дескриптор.
+ * @brief Duplicates a file descriptor.
  *
- * Эта функция дублирует source_fd в target_fd.
- * В случае ошибки завершает программу с сообщением об ошибке.
+ * This function duplicates `source_fd` to `target_fd`.
+ * If an error occurs, it terminates the program with an error message.
  *
- * @param source_fd Исходный файловый дескриптор.
- * @param target_fd Целевой файловый дескриптор.
- * @param shell Указатель на структуру shell для управления процессом.
- * @return Статус операции dup2 (0 при успехе, -1 при ошибке).
+ * @param source_fd Source file descriptor.
+ * @param target_fd Target file descriptor.
+ * @param shell Pointer to the shell structure for process management.
+ * @return Status of the `dup2` operation. 0 on success, -1 on error.
  */
 int	duplicate_fd(int source_fd, int target_fd, t_shell *shell)
 {

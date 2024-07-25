@@ -1,16 +1,29 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   redirects.c                                        :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: ogoman <ogoman@student.hive.fi>            +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2024/07/24 08:13:46 by ogoman            #+#    #+#             */
+/*   Updated: 2024/07/24 08:15:10 by ogoman           ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include "minishell.h"
 
 /**
- * @brief Обрабатывает перенаправление ввода.
+ * @brief Handles input redirection.
  *
- * Эта функция открывает файл для чтения, сохраняет текущий stdin, 
- * перенаправляет stdin на открытый файл, выполняет команду, восстанавливает 
- * первоначальный stdin и закрывает файл. Если файл не может быть открыт, 
- * возвращает код ошибки.
+ * This function opens a file for reading, saves the current stdin,
+ * redirects stdin to the opened file, executes the command, restores
+ * the original stdin, and closes the file. If the file cannot be opened,
+ * it returns an error code.
  *
- * @param redirect Структура перенаправления, содержащая информацию о файле и команде.
- * @param shell Указатель на структуру shell для управления процессом.
- * @return Код завершения выполнения команды или код ошибки.
+ * @param redirect The redirection structure containing file and command 
+ * information.
+ * @param shell Pointer to the shell structure for process management.
+ * @return The exit code of the command or an error code.
  */
 int	process_input_redirection(t_redir *redirect, t_shell *shell)
 {
@@ -38,18 +51,19 @@ int	process_input_redirection(t_redir *redirect, t_shell *shell)
 	return (exit_code);
 }
 
-
 /**
- * @brief Обрабатывает перенаправление вывода.
+ * @brief Handles output redirection.
  *
- * Эта функция открывает файл для записи (с созданием или добавлением), 
- * сохраняет текущий stdout, перенаправляет stdout на открытый файл, выполняет 
- * команду, восстанавливает первоначальный stdout и закрывает файл. Если файл 
- * не может быть открыт, возвращает код ошибки.
+ * This function opens a file for writing (creating or appending), 
+ * saves the current stdout, redirects stdout to the opened file, 
+ * executes the command, restores the original stdout, and closes 
+ * the file. 
+ * If the file cannot be opened, it returns an error code.
  *
- * @param redirect Структура перенаправления, содержащая информацию о файле и команде.
- * @param shell Указатель на структуру shell для управления процессом.
- * @return Код завершения выполнения команды или код ошибки.
+ * @param redirect The redirection structure containing file and command 
+ * information.
+ * @param shell Pointer to the shell structure for process management.
+ * @return The exit code of the command or an error code.
  */
 int	process_output_redirection(t_redir *redirect, t_shell *shell)
 {
@@ -80,16 +94,16 @@ int	process_output_redirection(t_redir *redirect, t_shell *shell)
 	return (exit_code);
 }
 
-
 /**
- * @brief Обрабатывает перенаправление ввода или вывода.
+ * @brief Handles input or output redirection.
  *
- * Эта функция определяет тип перенаправления (ввод или вывод) и вызывает 
- * соответствующую функцию для обработки перенаправления.
+ * This function determines the type of redirection (input or output) 
+ * and calls the appropriate function to handle the redirection.
  *
- * @param redirect Структура перенаправления, содержащая информацию о файле и команде.
- * @param shell Указатель на структуру shell для управления процессом.
- * @return Код завершения выполнения команды или код ошибки.
+ * @param redirect The redirection structure containing file and command 
+ * information.
+ * @param shell Pointer to the shell structure for process management.
+ * @return The exit code of the command or an error code.
  */
 int	process_redirection(t_redir *redirect, t_shell *shell)
 {

@@ -1,25 +1,38 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   resolve.c                                          :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: ogoman <ogoman@student.hive.fi>            +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2024/07/24 08:35:52 by ogoman            #+#    #+#             */
+/*   Updated: 2024/07/24 08:35:52 by ogoman           ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
 
 #include "minishell.h"
 
-
 /**
- * @brief Обрабатывает символ '*' (wildcard) в шаблоне.
+ * @brief Processes the '*' (wildcard) character in the pattern.
  *
-
-	* Эта функция продвигает указатель в шаблоне и проверяет все возможные подстроки
- * строки файла для совпадения с оставшейся частью шаблона. Если символ '*'
- * является последним в шаблоне, функция возвращает true. В противном случае,
- * она рекурсивно вызывает `wildcard_check` для каждой возможной подстроки.
+ * This function advances the pattern pointer and checks all possible 
+ * substrings
+ * of the file string for a match with the remaining part of the pattern. 
+ * If the 
+ * '*' is the last character in the pattern, the function returns true. 
+ * Otherwise, 
+ * it recursively calls `wildcard_check` for each possible substring.
  *
- * @param file_ptr Указатель на указатель текущей позиции в строке файла.
- * @param mask_ptr Указатель на указатель текущей позиции в строке шаблона.
- * @param pos Указатель на текущую позицию в шаблоне.
- * @param context Указатель на структуру контекста подстановки,
- *                содержащую дополнительную информацию для обработки wildcard.
- * @return true, если найдено соответствие, иначе false.
+ * @param file_ptr Pointer to the current position in the file string.
+ * @param mask_ptr Pointer to the current position in the pattern string.
+ * @param pos Pointer to the current position in the pattern.
+ * @param context Pointer to the substitution context structure containing 
+ * additional
+ *                information for wildcard processing.
+ * @return true if a match is found, otherwise false.
  */
-bool	process_asterisk(const char **file_ptr, const char **mask_ptr, int *pos,
-		t_subst_context *context)
+bool	process_asterisk(const char **file_ptr, const char **mask_ptr,
+		int *pos, t_subst_context *context)
 {
 	(*mask_ptr)++;
 	(*pos)++;
@@ -35,27 +48,24 @@ bool	process_asterisk(const char **file_ptr, const char **mask_ptr, int *pos,
 }
 
 /**
-
-* @brief Проверяет соответствие строки файлу с учетом маски подстановочных символов.
+ * @brief Checks if a string matches a filename considering wildcard masks.
  *
- * Эта функция проверяет, соответствует ли строка имени файла заданной маске,
-
-	* содержащей подстановочные символы ('*'). Маска может содержать один или несколько
- * подстановочных символов,
-	которые соответствуют нулю или более символам в имени файла.
+ * This function checks whether a string matches the filename given a mask that
+ *  may
+ * contain wildcard characters ('*'). The mask can include one or more wildcard
+ *  characters
+ * that match zero or more characters in the filename.
  *
- * Функция выполняет итерацию по строкам файла и маски,
-	сравнивая символы по одному,
- * и обрабатывает подстановочные символы '*' при их обнаружении.
+ * The function iterates through the file and mask strings, comparing 
+ * characters one by one,
+ * and processes wildcard '*' when encountered.
  *
- * @param file Указатель на строку имени файла для проверки.
- * @param wildcard_mask Указатель на строку маски,
-	содержащую подстановочные символы.
- * @param pos Текущая позиция в строке маски.
- * @param context Контекст подстановки,
-	содержащий список позиций подстановочных символов.
- * @return true, если строка файла соответствует маске,
-	и false в противном случае.
+ * @param file Pointer to the filename string to check.
+ * @param wildcard_mask Pointer to the mask string containing wildcards.
+ * @param pos Current position in the mask string.
+ * @param context Substitution context containing the list of wildcard 
+ * positions.
+ * @return true if the filename string matches the mask, otherwise false.
  */
 bool	wildcard_check(const char *file, const char *wildcard_mask, int pos,
 		t_subst_context *context)
@@ -85,22 +95,22 @@ bool	wildcard_check(const char *file, const char *wildcard_mask, int pos,
 }
 
 /**
- * @brief Проверяет,
-	есть ли текущая позиция в списке активных подстановочных символов.
+ * @brief Checks if the current position is in the list of active wildcards.
  *
- * Эта функция проходит по списку позиций wildcard в контексте подстановки и
- * проверяет, есть ли текущая позиция среди них.
+ * This function iterates through the list of wildcard positions in 
+ * the substitution context
+ * and checks if the current position is among them.
  *
- * @param pos Текущая позиция для проверки.
- * @param context Указатель на структуру контекста подстановки,
- *                содержащую список позиций wildcard.
- * @return true, если текущая позиция является активным wildcard, иначе false.
+ * @param pos The current position to check.
+ * @param context Pointer to the substitution context structure containing 
+ * the wildcard list.
+ * @return true if the current position is an active wildcard, otherwise false.
  */
 bool	in_wildcard_list(int pos, t_subst_context *context)
 {
-	t_list *node;
-	int *current_pos;
-	bool is_match;
+	t_list	*node;
+	int		*current_pos;
+	bool	is_match;
 
 	node = context->wildcard_list;
 	while (node != NULL)
@@ -115,24 +125,24 @@ bool	in_wildcard_list(int pos, t_subst_context *context)
 }
 
 /**
-
-	* @brief Находит позиции символов '*' в строке и сохраняет их в контексте подстановки.
+ * @brief Finds the positions of '*' characters in a string and saves them 
+ * in the substitution context.
  *
- * Функция проходит по строке, находит все символы '*' и сохраняет их позиции
-
-	* относительно начала строки в списке подстановочных символов в контексте подстановки.
- * Позиции сохраняются только в том случае,
-	если текущий режим кавычек является OUTSIDE.
+ * This function scans through the string, locates all '*' characters, and 
+ * saves their positions
+ * relative to the start of the string in the wildcard list in the 
+ * substitution context.
+ * Positions are saved only if the current quote mode is OUTSIDE.
  *
- * @param str Строка, в которой осуществляется поиск символов '*'.
- * @param context Указатель на контекст подстановки,
-	содержащий информацию о текущем режиме кавычек и буфере.
- * @param shell Указатель на структуру оболочки для управления памятью.
+ * @param str The string to search for '*' characters.
+ * @param context Pointer to the substitution context containing information 
+ * about the current quote mode and buffer.
+ * @param shell Pointer to the shell structure for memory management.
  */
 void	locate_wildcards(char *str, t_subst_context *context, t_shell *shell)
 {
-	int *wildcard_ptr;
-	int i;
+	int	*wildcard_ptr;
+	int	i;
 
 	if (context->quote_mode == OUTSIDE)
 	{
@@ -154,25 +164,25 @@ void	locate_wildcards(char *str, t_subst_context *context, t_shell *shell)
 }
 
 /**
- * @brief Проверяет, видим ли файл, основываясь на его имени и маске.
+ * @brief Checks if a file is visible based on its name and mask.
  *
- * Эта функция проверяет, является ли файл скрытым (начинается с '.')
- * и разрешает ли маска отображение скрытых файлов. Если файл скрыт,
- * а маска не разрешает отображение скрытых файлов, функция возвращает true.
+ * This function checks whether a file is hidden (starts with '.') and if the 
+ * mask allows hidden files.
+ * If the file is hidden and the mask does not allow hidden files, the 
+ * function returns true.
  *
- * @param filepath Путь к файлу для проверки.
- * @param context Указатель на структуру контекста подстановки,
-	содержащую маску.
- * @return (true, если файл скрыт,
-	а маска не разрешает отображение скрытых файлов);
- *         false в противном случае.
+ * @param filepath Path to the file to check.
+ * @param context Pointer to the substitution context structure containing 
+ * the mask.
+ * @return true if the file is hidden and the mask does not allow hidden 
+ * files; false otherwise.
  */
 bool	is_file_visible(const char *filepath, t_subst_context *context)
 {
-	const char *mask_segment;
-	const char *name_segment;
-	bool file_is_hidden;
-	bool mask_allows_hidden;
+	const char	*mask_segment;
+	const char	*name_segment;
+	bool		file_is_hidden;
+	bool		mask_allows_hidden;
 
 	mask_segment = ft_strrchr(context->subst_buffer, '/');
 	name_segment = ft_strrchr(filepath, '/');
@@ -192,23 +202,27 @@ bool	is_file_visible(const char *filepath, t_subst_context *context)
 }
 
 /**
- * @brief Вставляет текущий буфер как новый токен в список токенов контекста.
+ * @brief Inserts the current buffer as a new token into the context 
+ * token list.
  *
- * Эта функция проверяет текущий буфер кон��екста и добавляет его содержимое
- * в список токенов. Если буфер пуст и флаг is_empty_qts установлен,
-	добавляется
- * пустая строка. Если буфер содержит данные, они копируются в новый токен и
- * добавляются в список. Если в контексте есть список подстановочных знаков
- * (wildcards), вызывается функция обработки имен файлов.
+ * This function checks the current buffer in the context and adds its 
+ * contents
+ * to the list of tokens. If the buffer is empty and the is_empty_qts 
+ * flag is set,
+ * an empty string is added. If the buffer contains data, it is copied 
+ * into a new token
+ * and added to the list. If there is a wildcard list in the context, 
+ * the function
+ * processes filenames.
  *
- * @param context Указатель на контекст замены,
-	содержащий информацию о буфере и токенах.
- * @param shell Указатель на структуру оболочки для управления памятью.
- * @return Всегда возвращает NULL.
+ * @param context Pointer to the substitution context containing information 
+ * about the buffer and tokens.
+ * @param shell Pointer to the shell structure for memory management.
+ * @return Always returns NULL.
  */
 void	*insert_tkn(t_subst_context *context, t_shell *shell)
 {
-	char *new_tkn;
+	char	*new_tkn;
 
 	new_tkn = NULL;
 	if (context->buf_pos == 0 && context->is_empty_qts)
@@ -232,24 +246,25 @@ void	*insert_tkn(t_subst_context *context, t_shell *shell)
 }
 
 /**
- * @brief Добавляет значение переменной в буфер замены контекста.
+ * @brief Adds the value of a variable to the substitution buffer context.
  *
- * Эта функция увеличивает ёмкость буфера замены в контексте,
-	чтобы вместить новое значение,
-
-	* и добавляет его в текущий буфер. Также функция обновляет список подстановочных знаков.
+ * This function increases the capacity of the substitution buffer in the 
+ * context
+ * to accommodate the new value and appends it to the current buffer. It 
+ * also updates
+ * the list of wildcard characters.
  *
- * @param value Значение переменной, которое нужно добавить в буфер.
- * @param context Указатель на контекст замены,
-	содержащий информацию о буфере и подстановках.
- * @param shell Указатель на структуру оболочки для управления памятью.
+ * @param var_value The value of the variable to add to the buffer.
+ * @param context Pointer to the substitution context containing information 
+ * about the buffer and wildcards.
+ * @param shell Pointer to the shell structure for memory management.
  */
 void	expand_subst_buffer(char *var_value, t_subst_context *context,
 		t_shell *shell)
 {
-	char *new_buffer;
-	size_t value_len;
-	size_t new_capacity;
+	char	*new_buffer;
+	size_t	value_len;
+	size_t	new_capacity;
 
 	value_len = ft_strlen(var_value);
 	new_capacity = context->capacity + value_len;
@@ -264,23 +279,22 @@ void	expand_subst_buffer(char *var_value, t_subst_context *context,
 }
 
 /**
- * @brief Преобразует связанный список в массив строк.
+ * @brief Converts a linked list into an array of strings.
  *
- * Эта функция принимает связанный список и создает новый массив строк,
-
-	* содержащий элементы списка. Завершающий элемент массива устанавливается в NULL.
+ * This function takes a linked list and creates a new array of strings
+ * containing the elements of the list. The last element of the array is set 
+ * to NULL.
  *
- * @param list Указатель на указатель на первый элемент связанного списка.
- * @param shell Указатель на структуру оболочки для управления памятью.
- * @return Указатель на массив строк или NULL,
-	если выделение памяти не удалось.
+ * @param list Pointer to the pointer to the first element of the linked list.
+ * @param shell Pointer to the shell structure for memory management.
+ * @return Pointer to the array of strings or NULL if memory allocation fails.
  */
 char	**create_string_array(t_list **list, t_shell *shell)
 {
-	t_list *node;
-	char **array;
-	int list_size;
-	int index;
+	t_list	*node;
+	char	**array;
+	int		list_size;
+	int		index;
 
 	list_size = ft_lstsize(*list);
 	array = (char **)calloc_tracked(list_size + 1, sizeof(char *),
@@ -299,74 +313,141 @@ char	**create_string_array(t_list **list, t_shell *shell)
 	return (array);
 }
 
+// /**
+//  * @brief Processes and adds tokens to the substitution context.
+//  *
+//  * This function parses a string into tokens, processes each token, and 
+//  * adds it
+//  * to the token list in the substitution context. If a token starts with 
+//  * a space,
+//  * it is added separately. If a token does not end with a space, it is 
+//  * added to the end of the list.
+//  *
+//  * @param tokens Pointer to the array of tokens.
+//  * @param context Pointer to the substitution context.
+//  * @param shell Pointer to the shell structure for memory management.
+//  * @param str The original string that was split into tokens.
+//  * @return Pointer to the last token if it does not end with a space, 
+//  *or NULL.
+//  */
+// char	*handle_tokens(char **tokens, t_subst_context *context, t_shell *shell,
+// 		char *str)
+// {
+// 	bool	starts_with_space;
+// 	bool	ends_with_space;
+
+// 	starts_with_space = (str[0] == ' ');
+// 	ends_with_space = (str[ft_strlen(str) - 1] == ' ');
+// 	if (*tokens)
+// 	{
+// 		if (!starts_with_space)
+// 		{
+// 			expand_subst_buffer(*tokens++, context, shell);
+// 			if (!*tokens)
+// 				return (insert_tkn(context, shell));
+// 		}
+// 		else
+// 			insert_tkn(context, shell);
+// 		while (*tokens)
+// 		{
+// 			insert_tkn(context, shell);
+// 			if (!*(tokens + 1) && !ends_with_space)
+// 				return (*tokens);
+// 			lstadd_back_tracked(*tokens++, context->tkn_list, COMMAND_TRACK,
+// 				shell);
+// 		}
+// 	}
+// 	else
+// 		insert_tkn(context, shell);
+// 	return (NULL);
+// }
+
 /**
- * @brief Обрабатывает и добавляет токены в контекст замены.
+ * @brief Processes tokens when the input string does not start with a space.
  *
- * Эта функция разбирает строку на токены, обрабатывает каждый токен и 
- * добавляет его в список токенов в контексте замены. Если токен начинается
- * с пробела, он добавляется отдельно. Если токен не заканчивается пробелом,
- * он добавляется в конец списка.
+ * This function expands the substitution buffer with the tokens and adds tokens
+ * to the list.
+ * If the last token does not end with a space, it returns the last token.
  *
- * @param tokens Указатель на массив токенов.
- * @param context Указатель на контекст замены.
- * @param shell Указатель на структуру оболочки для управления памятью.
- * @param str Исходная строка, которая была разбита на токены.
- * @return Указатель на последний токен, если он не заканчивается пробелом,
- *         или NULL.
+ * @param tokens Array of tokens to process.
+ * @param context Substitution context containing the buffer and token list.
+ * @param shell Pointer to the shell structure for memory management.
+ * @param str Original string that was tokenized.
+ * @return Pointer to the last token if it does not end with a space, or NULL.
+ */
+static char	*process_tokens(char **tokens, t_subst_context *context,
+		t_shell *shell, char *str)
+{
+	bool	ends_with_space;
+
+	ends_with_space = (str[ft_strlen(str) - 1] == ' ');
+	expand_subst_buffer(*tokens++, context, shell);
+	if (!*tokens)
+		return (insert_tkn(context, shell));
+	while (*tokens)
+	{
+		insert_tkn(context, shell);
+		if (!*(tokens + 1) && !ends_with_space)
+			return (*tokens);
+		lstadd_back_tracked(*tokens++, context->tkn_list, COMMAND_TRACK,
+			shell);
+	}
+	return (NULL);
+}
+
+/**
+ * @brief Handles token processing based on the input string and token list.
+ *
+ * This function checks if the input string starts with a space and calls the
+ * appropriate function
+ * to process the tokens.
+ *
+ * @param tokens Array of tokens to process.
+ * @param context Substitution context containing the buffer and token list.
+ * @param shell Pointer to the shell structure for memory management.
+ * @param str Original string that was tokenized.
+ * @return Pointer to the last token if it does not end with a space, or NULL.
  */
 char	*handle_tokens(char **tokens, t_subst_context *context, t_shell *shell,
 		char *str)
 {
-	bool starts_with_space = (str[0] == ' ');
-	bool ends_with_space = (str[ft_strlen(str) - 1] == ' ');
+	bool	starts_with_space;
 
+	starts_with_space = (str[0] == ' ');
 	if (*tokens)
 	{
 		if (!starts_with_space)
-		{
-			expand_subst_buffer(*tokens++, context, shell);
-			if (!*tokens)
-				return (insert_tkn(context, shell));
-		}
+			return (process_tokens(tokens, context, shell, str));
 		else
 			insert_tkn(context, shell);
-		while (*tokens)
-		{
-			insert_tkn(context, shell);
-			if (!*(tokens + 1) && !ends_with_space)
-				return (*tokens);
-			lstadd_back_tracked(*tokens++, context->tkn_list, COMMAND_TRACK,
-				shell);
-		}
 	}
 	else
 		insert_tkn(context, shell);
 	return (NULL);
 }
 
-
 /**
- * @brief Разбивает строку на токены и обрабатывает их.
+ * @brief Splits a string into tokens and processes them.
  *
- * Эта функция разбивает входную строку на токены, используя пробелы как 
- * разделители, и вызывает handle_tokens для обработки каждого токена. 
- * Если строка пуста, она возвращается как есть. Если строка содержит только 
- * один токен, она также возвращается без изменений.
+ * This function splits the input string into tokens using spaces as 
+ * delimiters and
+ * calls `handle_tokens` to process each token. If the string is empty 
+ * or contains
+ * only one token, it is returned as is.
  *
- * @param context Указатель на контекст замены.
- * @param str Исходная строка, которую нужно разбить на токены.
- * @param shell Указатель на структуру оболочки для управления памятью.
- * @return Указатель на последний токен, если он не заканчивается пробелом,
- *         или NULL.
+ * @param context Pointer to the substitution context.
+ * @param str The input string to be split into tokens.
+ * @param shell Pointer to the shell structure for memory management.
+ * @return Pointer to the last token if it does not end with a space, 
+ * or NULL.
  */
 char	*tokenize_words(t_subst_context *context, char *str, t_shell *shell)
 {
-	char **tokens;
-	char *result;
+	char	**tokens;
+	char	*result;
 
 	if (strlen(str) == 0)
 		return (str);
-
 	tokens = split_tracked(str, ' ', COMMAND_TRACK, shell);
 	if (!tokens || !*tokens)
 		return (insert_tkn(context, shell));

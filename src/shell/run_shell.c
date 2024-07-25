@@ -1,14 +1,33 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   run_shell.c                                        :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: ogoman <ogoman@student.hive.fi>            +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2024/07/25 07:46:16 by ogoman            #+#    #+#             */
+/*   Updated: 2024/07/25 07:47:06 by ogoman           ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
 
 #include "minishell.h"
 
+/**
+ * @brief Runs the main shell loop, handling user input and executing commands.
+ *
+ * This function continuously prompts the user for input, processes the input,
+ * and executes the corresponding commands. It also handles cleanup and 
+ * signal interruptions.
+ *
+ * @param shell Pointer to the shell structure.
+ * @return The exit status of the last command executed.
+ */
 int	run_shell(t_shell *shell)
 {
 	char	*input_str;
 
 	while (true)
 	{
-		//g_signal = 0;//uncomment!!
-		//printf("g_signal run_shell: %d\n", g_signal);	
 		input_str = get_input(IN_STD);
 		if (g_signal == SIGINT)
 			shell->prev_cmd_status = 130;
@@ -27,6 +46,14 @@ int	run_shell(t_shell *shell)
 	return (shell->prev_cmd_status);
 }
 
+/**
+ * @brief Cleans up shell resources, such as temporary files and memory.
+ *
+ * This function removes temporary files, clears tracked memory, and resets 
+ * the syntax error state.
+ *
+ * @param shell Pointer to the shell structure.
+ */
 void	cleanup_shell(t_shell *shell)
 {
 	while (shell->is_main && shell->temp_files)
@@ -39,6 +66,16 @@ void	cleanup_shell(t_shell *shell)
 	shell->syntax_error = NULL;
 }
 
+/**
+ * @brief Gets user input from the standard input or heredoc.
+ *
+ * This function prompts the user for input depending on the input type 
+ * (standard input or heredoc)
+ * and sets the appropriate signal handlers.
+ *
+ * @param input_type The type of input to be read (standard input or heredoc).
+ * @return The input string read from the user.
+ */
 char	*get_input(t_input_type input_type)
 {
 	char	*input_str;

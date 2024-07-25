@@ -1,6 +1,18 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   signals.c                                          :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: ogoman <ogoman@student.hive.fi>            +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2024/07/25 07:47:48 by ogoman            #+#    #+#             */
+/*   Updated: 2024/07/25 07:48:01 by ogoman           ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include "minishell.h"
 
-void reset_readline(bool redisplay)
+void	reset_readline(bool redisplay)
 {
 	rl_replace_line("", 0);
 	rl_on_new_line();

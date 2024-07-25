@@ -1,18 +1,28 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   parser.c                                           :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: ogoman <ogoman@student.hive.fi>            +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2024/07/24 08:21:21 by ogoman            #+#    #+#             */
+/*   Updated: 2024/07/24 08:23:55 by ogoman           ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
 
 #include "minishell.h"
 
 /**
- * get_tkn_label
- * @brief Возвращает строковое представление типа токена.
+ * @brief Returns the string representation of a token type.
  *
-
-	* Функция `get_tkn_label` принимает тип токена `tkn_type` и возвращает его строковое представление.
- * В зависимости от значения `tkn_type` возвращается соответствующая строка.
- * Если тип токена не распознан, возвращается строка "unsupported token".
+ * The function `get_tkn_label` takes a token type `tkn_type` and returns
+ * its string representation. Depending on the value of `tkn_type`, the
+ * corresponding string is returned. If the token type is not recognized,
+ * "unsupported token" is returned.
  *
- * @param tkn_type Тип токена (перечисление `t_tkn_type`).
- * @return Строковое представление типа токена. Если тип токена не распознан,
- * возвращается "unsupported token".
+ * @param tkn_type The type of the token (enumeration `t_tkn_type`).
+ * @return The string representation of the token type. If the token type
+ * is not recognized, returns "unsupported token".
  */
 char	*get_tkn_label(t_tkn_type tkn_type)
 {
@@ -43,21 +53,20 @@ char	*get_tkn_label(t_tkn_type tkn_type)
 }
 
 /**
- * get_value
- * @brief Возвращает значение токена из узла списка.
+ * @brief Returns the value of a token from a list node.
  *
- * Функция `get_value` принимает указатель на узел списка `tkn`.
- * Она выполняет следующие шаги:
- * 1. Инициализирует переменную `value` значением `NULL`.
- * 2. Проверяет, что узел списка `tkn` не равен `NULL`.
- * 3. Извлекает содержимое узла списка (предполагая, что это структура `t_tkn`).
-
-	* 4. Извлекает значение токена из структуры `t_tkn` и сохраняет его в переменной `value`.
- * 5. Возвращает значение токена.
+ * The function `get_value` takes a pointer to a token list node `tkn`.
+ * It performs the following steps:
+ * 1. Initializes the `value` variable to `NULL`.
+ * 2. Checks if the token list node `tkn` is not `NULL`.
+ * 3. Extracts the content of the list node (assuming it is of type `t_tkn`).
+ * 4. Retrieves the token value from the `t_tkn` structure and stores it
+ *    in the `value` variable.
+ * 5. Returns the token value.
  *
- * @param tkn Указатель на узел списка токенов.
- * @return Указатель на строку, содержащую значение токена, или `NULL`,
-	если узел списка пустой.
+ * @param tkn Pointer to a token list node.
+ * @return Pointer to the string containing the token value, or `NULL`
+ *         if the list node is empty.
  */
 char	*get_value(t_list *tkn)
 {
@@ -74,16 +83,15 @@ char	*get_value(t_list *tkn)
 }
 
 /**
- * get_type
- * @brief Возвращает тип токена из узла списка.
+ * @brief Returns the type of a token from a list node.
  *
- * Функция `get_type` принимает указатель на узел списка `tkn_node`.
- * Она выполняет следующие шаги:
- * 1. Извлекает содержимое узла списка (предполагая, что это структура `t_tkn`).
- * 2. Возвращает тип токена, который хранится в структуре `t_tkn`.
+ * The function `get_type` takes a pointer to a token list node `tkn_node`.
+ * It performs the following steps:
+ * 1. Extracts the content of the list node (assuming it is of type `t_tkn`).
+ * 2. Returns the token type stored in the `t_tkn` structure.
  *
- * @param tkn_node Указатель на узел списка токенов.
- * @return Значение типа `t_tkn_type`, представляющее тип токена.
+ * @param tkn_node Pointer to a token list node.
+ * @return The value of type `t_tkn_type` representing the token type.
  */
 t_tkn_type	get_type(t_list *tkn_node)
 {
@@ -93,27 +101,26 @@ t_tkn_type	get_type(t_list *tkn_node)
 	return (tkn_content->type);
 }
 
-/** parse_cmd
- * @brief Парсит команду и создает AST узел команды.
+/**
+ * @brief Parses a command and creates an AST node for the command.
  *
- * Функция `parse_cmd` принимает список токенов `tokens` и структуру `shell`.
- * Она выполняет следующие шаги:
- * 1. Инициализирует переменные: `arg_count` для подсчета аргументов,
-	`i` для итерации,
-	`cur_tkn` для текущего токена и `cmd_node` для узла команды.
- * 2. Проходит по токенам и подсчитывает количество аргументов команды,
-	пока не встретит токен, не являющийся текстом.
- * 3. Если не найдено ни одного аргумента (т.е. `arg_count` равно 0),
-	возвращает `NULL`.
- * 4. Выделяет память для массива аргументов команд (`args`),
-	включая место для завершающего `NULL`.
-
-	* 5. Заполняет массив `args` значениями токенов и продвигает указатель на текущий токен (`tokens`).
- * 6. Создает AST узел команды с помощью `build_node_cmd` и возвращает его.
+ * The function `parse_cmd` takes a list of tokens `tokens` and a `shell` 
+ * structure. It performs the following steps:
+ * 1. Initializes variables: `arg_count` for counting arguments, `i` for 
+ *    iteration, `cur_tkn` for the current token, and `cmd_node` for the 
+ *    command node.
+ * 2. Iterates through tokens and counts the number of command arguments
+ *    until a non-text token is encountered.
+ * 3. If no arguments are found (i.e., `arg_count` is 0), returns `NULL`.
+ * 4. Allocates memory for the command argument array (`args`), including
+ *    space for a terminating `NULL`.
+ * 5. Fills the `args` array with token values and advances the current token
+ *    pointer (`tokens`).
+ * 6. Creates an AST node for the command using `build_node_cmd` and returns it.
  *
- * @param tokens Указатель на список токенов.
- * @param shell Структура оболочки.
- * @return Указатель на AST узел команды или `NULL`, если аргументы не найдены.
+ * @param tokens Pointer to the list of tokens.
+ * @param shell Shell structure.
+ * @return Pointer to the command AST node, or `NULL` if no arguments are found.
  */
 t_ast	*parse_cmd(t_list **tokens, t_shell *shell)
 {
@@ -144,35 +151,43 @@ t_ast	*parse_cmd(t_list **tokens, t_shell *shell)
 	return (cmd_node);
 }
 
-
 /**
- * @brief Парсит логические выражения и строит соответствующее дерево AST.
+ * @brief Parses logical expressions and builds the corresponding AST.
  *
- * Функция parse_logic выполняет разбор логических операторов (&& и ||) в 
- * команде и строит дерево AST, которое представляет 
- * собой логическую структуру команды. Она рекурсивно разбирает выражения 
- * с логическими операторами и соединяет их в дерево.
+ * The function `parse_logic` parses logical operators (&& and ||) in a command
+ * and builds an AST that represents the logical structure of the command. It 
+ * recursively parses expressions with logical operators and connects them into
+ * a tree.
  *
- * @param tkn_list Указатель на список токенов, представляющих команду.
- * @param shell Указатель на структуру shell, содержащую информацию о состоянии оболочки.
- * 
- * @return Указатель на корень AST, представляющий логическое выражение.
+ * @param tkn_list Pointer to the list of tokens representing the command.
+ * @param shell Pointer to the shell structure containing shell state 
+ * information.
+ * @return Pointer to the root of the AST representing the logical expression.
  *
- * Функция выполняет следующие шаги:
- * 1. Парсит первое подвыражение с помощью функции parse_pipe и сохраняет его в first_expr.
- * 2. В цикле проверяет, есть ли еще токены для разбора и являются ли они логическими операторами (&& или ||).
- * 3. Если текущий токен является логическим оператором, сохраняет его тип в operator_type и переходит к следующему токену.
- * 4. Парсит второе подвыражение с помощью функции parse_pipe и сохраняет его в second_expr.
- * 5. Если второе подвыражение не удалось распарсить, возвращает первое подвыражение.
- * 6. Создает новый узел логического оператора с помощью функции build_node_logic, передавая в нее первое подвыражение, тип оператора и второе подвыражение.
- * 7. Если создание узла не удалось, возвращает первое подвыражение.
- * 8. Обновляет first_expr на новый логический узел и продолжает цикл.
- * 9. Возвращает корень дерева AST, представляющий логическое выражение.
+ * The function performs the following steps:
+ * 1. Parses the first subexpression using `parse_pipe` and saves it as 
+ * `first_expr`.
+ * 2. In a loop, checks if there are more tokens to parse and if they are 
+ * logical
+ *    operators (&& or ||).
+ * 3. If the current token is a logical operator, saves its type in 
+ * `operator_type`
+ *    and moves to the next token.
+ * 4. Parses the second subexpression using `parse_pipe` and saves it 
+ * as `second_expr`.
+ * 5. If the second subexpression fails to parse, returns the first 
+ * subexpression.
+ * 6. Creates a new logical operator node using `build_node_logic`, 
+ * passing in the
+ *    first subexpression, operator type, and second subexpression.
+ * 7. If node creation fails, returns the first subexpression.
+ * 8. Updates `first_expr` to the new logical node and continues the loop.
+ * 9. Returns the root of the AST representing the logical expression.
  */
 t_ast	*parse_logic(t_list **tkn_list, t_shell *shell)
 {
-	t_ast		*first_expr; //left expression
-	t_ast		*second_expr; //right expression
+	t_ast		*first_expr;
+	t_ast		*second_expr;
 	t_ast		*logical_expr;
 	t_tkn_type	operator_type;
 
@@ -195,33 +210,40 @@ t_ast	*parse_logic(t_list **tkn_list, t_shell *shell)
 	return (first_expr);
 }
 /**
- * @brief Парсит команды с пайпами и строит соответствующее дерево AST.
+ * @brief Parses commands with pipes and builds the corresponding AST.
  *
- * Функция parse_pipe выполняет разбор операторов пайпа (|) в команде и строит 
- * дерево AST (Abstract Syntax Tree), которое представляет собой цепочку команд, 
- * соединенных через пайпы. Она рекурсивно разбирает команды с пайпами и 
- * соединяет их в дерево.
+ * The function `parse_pipe` parses pipe operators (|) in a command and builds
+ * an AST (Abstract Syntax Tree) that represents a chain of commands connected
+ * by pipes. It recursively parses commands with pipes and connects them 
+ * into a tree.
  *
- * @param tkn_list Указатель на список токенов, представляющих команду.
- * @param shell Указатель на структуру shell, содержащую информацию о состоянии оболочки.
- * 
- * @return Указатель на корень AST, представляющий цепочку команд с пайпами.
+ * @param tkn_list Pointer to the list of tokens representing the command.
+ * @param shell Pointer to the shell structure containing shell state 
+ * information.
+ * @return Pointer to the root of the AST representing the command chain 
+ * with pipes.
  *
- * Функция выполняет следующие шаги:
- * 1. Парсит первое подвыражение с редиректами с помощью функции process_redir и сохраняет его в input_side.
- * 2. В цикле проверяет, есть ли еще токены для разбора и являются ли они оператором пайпа (|).
- * 3. Если текущий токен является оператором пайпа, переходит к следующему токену.
- * 4. Парсит второе подвыражение с редиректами с помощью функции process_redir и сохраняет его в output_side.
- * 5. Если второе подвыражение не удалось распарсить, возвращает первое подвыражение.
- * 6. Создает новый узел пайпа с помощью функции build_node_pipe, передавая в нее первое и второе подвыражения.
- * 7. Если создание узла не удалось, возвращает первое подвыражение.
- * 8. Обновляет input_side на новый узел пайпа и продолжает цикл.
- * 9. Возвращает корень дерева AST, представляющий цепочку команд с пайпами.
+ * The function performs the following steps:
+ * 1. Parses the first subexpression with redirects using `process_redir` and 
+ * saves it as `input_side`.
+ * 2. In a loop, checks if there are more tokens to parse and if they are 
+ * pipe operators (|).
+ * 3. If the current token is a pipe operator, moves to the next token.
+ * 4. Parses the second subexpression with redirects using `process_redir` 
+ * and saves it as `output_side`.
+ * 5. If the second subexpression fails to parse, returns the first 
+ * subexpression.
+ * 6. Creates a new pipe node using `build_node_pipe`, passing in the 
+ * first and second subexpressions.
+ * 7. If node creation fails, returns the first subexpression.
+ * 8. Updates `input_side` to the new pipe node and continues the loop.
+ * 9. Returns the root of the AST representing the command chain with pipes.
  */
+
 t_ast	*parse_pipe(t_list **tkn_list, t_shell *shell)
 {
-	t_ast	*input_side; //left expression
-	t_ast	*output_side; //right expression
+	t_ast	*input_side;
+	t_ast	*output_side;
 	t_ast	*pipeline_expr;
 
 	input_side = process_redir(tkn_list, shell);
@@ -241,22 +263,22 @@ t_ast	*parse_pipe(t_list **tkn_list, t_shell *shell)
 	return (input_side);
 }
 
-/** parse_brace
- * @brief Разбирает токены, заключенные в скобки,
-	и создает соответствующие узлы AST.
+/**
+ * @brief Parses tokens enclosed in braces and creates corresponding AST nodes.
  *
- * Эта функция обрабатывает токены,
-	которые заключены в скобки (T_BRACE_START и T_BRACE_END).
- * Она проверяет наличие начальной скобки,
-	затем вызывает функцию `parse_logic_and_pipe` для разбора содержимого скобок.
-
-	* После этого она проверяет наличие закрывающей скобки. Если обнаруживается синтаксическая ошибка,
-	функция фиксирует её и возвращает NULL.
+ * This function handles tokens enclosed in braces (T_BRACE_START and 
+ * T_BRACE_END).
+ * It checks for the presence of an opening brace, then calls `parse_logic` 
+ * to parse
+ * the contents of the braces. Afterward, it checks for the presence of a 
+ * closing brace.
+ * If a syntax error is detected, it records the error and returns `NULL`.
  *
- * @param tokens Указатель на список токенов.
- * @param shell Указатель на структуру shell.
- * @return t_ast* Указатель на узел AST, представляющий содержимое скобок,
-	или NULL в случае синтаксической ошибки.
+ * @param tokens Pointer to the list of tokens.
+ * @param shell Pointer to the shell structure.
+ * @return Pointer to the AST node representing the contents of the braces, 
+ * or `NULL`
+ *         in case of a syntax error.
  */
 t_ast	*parse_brace(t_list **tokens, t_shell *shell)
 {
@@ -287,24 +309,23 @@ t_ast	*parse_brace(t_list **tokens, t_shell *shell)
 }
 
 /**
- * parse_tokens
- * @brief Парсит список токенов и создает синтаксическое дерево (AST).
+ * @brief Parses a list of tokens and creates a syntax tree (AST).
  *
- * Функция `parse_tokens` принимает список токенов `tokens` и структуру `shell`.
- * Она выполняет следующие шаги:
- * 1. Вызывает `parse_logic_and_pipe`,
-	чтобы создать синтаксическое дерево (AST) из токенов.
- * 2. Если после парсинга остались токены,
-	записывает синтаксическую ошибку с первым неиспользованным токеном.
- * 3. Если в процессе парсинга обнаружена синтаксическая ошибка,
-	отображает её и возвращает результат ошибки.
- * 4. Если ошибок нет, возвращает `EXIT_SUCCESS`.
+ * The function `parse_tokens` takes a list of tokens `tokens` and a `shell` 
+ * structure.
+ * It performs the following steps:
+ * 1. Calls `parse_logic` to create an AST from the tokens.
+ * 2. If there are leftover tokens after parsing, records a syntax error 
+ * with the first
+ *    unused token.
+ * 3. If a syntax error is detected during parsing, displays it and returns 
+ * the error result.
+ * 4. If no errors are found, returns `EXIT_SUCCESS`.
  *
- * @param tokens Указатель на список токенов.
- * @param syntax_tree Указатель на указатель синтаксического дерева.
- * @param shell Структура оболочки.
- * @return `EXIT_SUCCESS` в случае успеха,
-	код ошибки в случае синтаксической ошибки.
+ * @param tokens Pointer to the list of tokens.
+ * @param syntax_tree Pointer to a pointer for the syntax tree.
+ * @param shell Shell structure.
+ * @return `EXIT_SUCCESS` on success, error code on syntax error.
  */
 int	parse_tokens(t_list *tokens, t_ast **syntax_tree, t_shell *shell)
 {
