@@ -313,113 +313,53 @@ char	**create_string_array(t_list **list, t_shell *shell)
 	return (array);
 }
 
-// /**
-//  * @brief Processes and adds tokens to the substitution context.
-//  *
-//  * This function parses a string into tokens, processes each token, and 
-//  * adds it
-//  * to the token list in the substitution context. If a token starts with 
-//  * a space,
-//  * it is added separately. If a token does not end with a space, it is 
-//  * added to the end of the list.
-//  *
-//  * @param tokens Pointer to the array of tokens.
-//  * @param context Pointer to the substitution context.
-//  * @param shell Pointer to the shell structure for memory management.
-//  * @param str The original string that was split into tokens.
-//  * @return Pointer to the last token if it does not end with a space, 
-//  *or NULL.
-//  */
-// char	*handle_tokens(char **tokens, t_subst_context *context, t_shell *shell,
-// 		char *str)
-// {
-// 	bool	starts_with_space;
-// 	bool	ends_with_space;
-
-// 	starts_with_space = (str[0] == ' ');
-// 	ends_with_space = (str[ft_strlen(str) - 1] == ' ');
-// 	if (*tokens)
-// 	{
-// 		if (!starts_with_space)
-// 		{
-// 			expand_subst_buffer(*tokens++, context, shell);
-// 			if (!*tokens)
-// 				return (insert_tkn(context, shell));
-// 		}
-// 		else
-// 			insert_tkn(context, shell);
-// 		while (*tokens)
-// 		{
-// 			insert_tkn(context, shell);
-// 			if (!*(tokens + 1) && !ends_with_space)
-// 				return (*tokens);
-// 			lstadd_back_tracked(*tokens++, context->tkn_list, COMMAND_TRACK,
-// 				shell);
-// 		}
-// 	}
-// 	else
-// 		insert_tkn(context, shell);
-// 	return (NULL);
-// }
-
 /**
- * @brief Processes tokens when the input string does not start with a space.
+ * @brief Handles token substitution and insertion into the context.
  *
- * This function expands the substitution buffer with the tokens and adds tokens
- * to the list.
- * If the last token does not end with a space, it returns the last token.
+ * Processes the given tokens for substitution and manages their insertion
+ * into the provided context based on the presence of leading and trailing spaces.
  *
- * @param tokens Array of tokens to process.
- * @param context Substitution context containing the buffer and token list.
- * @param shell Pointer to the shell structure for memory management.
- * @param str Original string that was tokenized.
- * @return Pointer to the last token if it does not end with a space, or NULL.
- */
-static char	*process_tokens(char **tokens, t_subst_context *context,
-		t_shell *shell, char *str)
-{
-	bool	ends_with_space;
-
-	ends_with_space = (str[ft_strlen(str) - 1] == ' ');
-	expand_subst_buffer(*tokens++, context, shell);
-	if (!*tokens)
-		return (insert_tkn(context, shell));
-	while (*tokens)
-	{
-		insert_tkn(context, shell);
-		if (!*(tokens + 1) && !ends_with_space)
-			return (*tokens);
-		lstadd_back_tracked(*tokens++, context->tkn_list, COMMAND_TRACK,
-			shell);
-	}
-	return (NULL);
-}
-
-/**
- * @brief Handles token processing based on the input string and token list.
+ * @param tokens Double pointer to the array of tokens to be processed.
+ * @param context Pointer to the substitution context structure.
+ * @param shell Pointer to the shell structure.
+ * @param str The original string from which the tokens are derived.
+ * 
+ * @return If a token remains unprocessed, returns the last token. Otherwise, returns NULL.
  *
- * This function checks if the input string starts with a space and calls the
- * appropriate function
- * to process the tokens.
- *
- * @param tokens Array of tokens to process.
- * @param context Substitution context containing the buffer and token list.
- * @param shell Pointer to the shell structure for memory management.
- * @param str Original string that was tokenized.
- * @return Pointer to the last token if it does not end with a space, or NULL.
+ * @details
+ * - Checks if the original string starts or ends with a space.
+ * - If tokens are provided:
+ *   - If the string does not start with a space, the first token is expanded and inserted.
+ *   - If the string starts with a space, it inserts a token directly.
+ *   - For each token:
+ *     - Inserts the token into the context.
+ *     - If the current token is the last and the string does not end with a space, returns this token.
+ *     - Otherwise, adds the token to the tracked list in the context.
+ * - If no tokens are provided, inserts a token directly into the context.
  */
 char	*handle_tokens(char **tokens, t_subst_context *context, t_shell *shell,
 		char *str)
 {
 	bool	starts_with_space;
+	bool	ends_with_space;
 
 	starts_with_space = (str[0] == ' ');
+	ends_with_space = (str[ft_strlen(str) - 1] == ' ');
 	if (*tokens)
 	{
-		if (!starts_with_space)
-			return (process_tokens(tokens, context, shell, str));
-		else
+		if (!starts_with_space && (expand_subst_buffer(*tokens++, context, shell),
+			!*tokens))
+			return (insert_tkn(context, shell));
+		else if (starts_with_space)
 			insert_tkn(context, shell);
+		while (*tokens)
+		{
+			insert_tkn(context, shell);
+			if (!*(tokens + 1) && !ends_with_space)
+				return (*tokens);
+			lstadd_back_tracked(*tokens++, context->tkn_list,
+				COMMAND_TRACK, shell);
+		}
 	}
 	else
 		insert_tkn(context, shell);
