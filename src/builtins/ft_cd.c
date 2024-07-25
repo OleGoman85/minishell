@@ -1,141 +1,62 @@
-/* ************************************************************************** */
-/*                                                                            */
-/*                                                        :::      ::::::::   */
-/*   ft_cd.c                                            :+:      :+:    :+:   */
-/*                                                    +:+ +:+         +:+     */
-/*   By: ogoman <ogoman@student.hive.fi>            +#+  +:+       +#+        */
-/*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2024/07/25 08:47:45 by ogoman            #+#    #+#             */
-/*   Updated: 2024/07/25 09:48:29 by ogoman           ###   ########.fr       */
-/*                                                                            */
-/* ************************************************************************** */
-
 #include "minishell.h"
 
-// /**
-//  * @brief Updates the environment variables PWD and OLDPWD.
-//  *
-//  * This function updates the environment variables PWD (current working
-//  * directory)
-//  * and OLDPWD (previous working directory) based on the current directory.
-//  * If the current directory cannot be accessed, it sets PWD to "/." and handles
-//  * errors.
-//  * "cd: error retrieving current directory: ", "getcwd: cannot access parent
-//  * directories: " == "cd: error retr cur dir ", "getcwd: can't ac par dir: "
-//  *
-//  * @param current_pwd Pointer to a string where the current working directory
-//  * will be stored.
-//  * @param oldpwd_val Value of the OLDPWD environment variable before changing
-//  * directories.
-//  * @param shell Pointer to the shell structure for managing environment
-//  * variables.
-//  * @return Exit code (EXIT_SUCCESS on success, EXIT_FAILURE on error).
-//  */
-// static int	update_env_vars(char **current_pwd, char *oldpwd_val,
-// 		t_shell *shell)
-// {
-// 	char	*buffer;
-// 	t_list	*ev;
-
-// 	buffer = calloc_tracked(PATH_MAX, 1, COMMAND_TRACK, shell);
-// 	if (!buffer)
-// 		exit_on_sys_error("calloc_tracked: ", errno, shell);
-// 	if (!(*current_pwd = getcwd(buffer, PATH_MAX)))
-// 	{
-// 		if (errno == ENOENT)
-// 		{
-// 			error_msg("cd: error retr cur dir ", "getcwd: can't ac par dir: ",
-// 				strerror(errno), shell);
-// 			change_ev_val(get_ev("PWD", shell->ev_list), "/.", true, shell);
-// 		}
-// 		else
-// 			exit_on_sys_error("getcwd: ", errno, shell);
-// 		return (EXIT_FAILURE);
-// 	}
-// 	if ((ev = get_ev("OLDPWD", shell->ev_list)))
-// 		change_ev_val(ev, oldpwd_val, false, shell);
-// 	else
-// 		add_ev("OLDPWD", oldpwd_val, &(shell->ev_list), shell);
-// 	if ((ev = get_ev("PWD", shell->ev_list)))
-// 		change_ev_val(ev, *current_pwd, false, shell);
-// 	return (EXIT_SUCCESS);
-// }
-
-static int	handle_getcwd_error(char *buffer, t_shell *shell)
+/**
+ * @brief Updates or adds an environment variable.
+ *
+ * This function checks if the environment variable exists. If it does,
+ * it updates its value. Otherwise, it adds the variable with the given value.
+ *
+ * @param ev Pointer to the environment variable node.
+ * @param value The value to set for the environment variable.
+ * @param shell Pointer to the shell structure.
+ */
+static void	update_env_var(t_list *ev, char *value, t_shell *shell)
 {
-	(void)*buffer;
-	if (errno == ENOENT)
-	{
-		error_msg("cd: error retrieving current directory",
-			"getcwd: cannot access parent directories: ",
-			strerror(errno), shell);
-		change_ev_val(get_ev("PWD", shell->ev_list), "/.", true, shell);
-	}
+	if (ev)
+		change_ev_val(ev, value, false, shell);
 	else
-		exit_on_sys_error("getcwd failed", errno, shell);
-	return (EXIT_FAILURE);
+		add_ev(value, value, &(shell->ev_list), shell);
 }
-
-static int	update_current_directory(char **current_pwd, t_shell *shell)
+/**
+ * @brief Updates the PWD and OLDPWD environment variables.
+ *
+ * This function updates the PWD and OLDPWD environment variables using
+ * the current working directory. If the current directory is not accessible,
+ * it handles the corresponding errors.
+ *
+ * @param current_pwd Pointer to the string containing the current working directory.
+ * @param oldpwd_val The value of the OLDPWD environment variable.
+ * @param shell Pointer to the shell structure.
+ * @return EXIT_SUCCESS on success, EXIT_FAILURE on error.
+ */
+static int	update_env_vars(char **current_pwd, char *oldpwd_val, t_shell *shell)
 {
 	char	*buffer;
 
 	buffer = calloc_tracked(PATH_MAX, 1, COMMAND_TRACK, shell);
 	if (!buffer)
-		exit_on_sys_error("calloc_tracked failed", errno, shell);
+		exit_on_sys_error("calloc_tracked: ", errno, shell);
 	*current_pwd = getcwd(buffer, PATH_MAX);
-	if (*current_pwd == NULL)
+	if (!*current_pwd)
 	{
-		return (handle_getcwd_error(buffer, shell));
+		if (errno == ENOENT)
+		{
+			error_msg("cd: error retrieving current directory: ",
+				"getcwd: cannot access parent directories: ",
+				strerror(errno), shell);
+			change_ev_val(get_ev("PWD", shell->ev_list), "/.", true, shell);
+		}
+		else
+			exit_on_sys_error("getcwd: ", errno, shell);
+		return (EXIT_FAILURE);
 	}
+	update_env_var(get_ev("OLDPWD", shell->ev_list), oldpwd_val, shell);
+	update_env_var(get_ev("PWD", shell->ev_list), *current_pwd, shell);
 	return (EXIT_SUCCESS);
 }
 
-static void	update_env_vars_internal(char *current_pwd, char *oldpwd_val,
-		t_shell *shell)
-{
-	t_list	*ev;
 
-	ev = get_ev("OLDPWD", shell->ev_list);
-	if (ev != NULL)
-		change_ev_val(ev, oldpwd_val, false, shell);
-	else
-		add_ev("OLDPWD", oldpwd_val, &(shell->ev_list), shell);
-	ev = get_ev("PWD", shell->ev_list);
-	if (ev != NULL)
-		change_ev_val(ev, current_pwd, false, shell);
-}
-/**
- * @brief Updates the PWD and OLDPWD environment variables.
- *
- * This function updates the environment variables PWD (current
- * working directory)
- * and OLDPWD (previous working directory). It retrieves the current
- * directory,
- * handles errors if the directory cannot be accessed, and updates the
- * environment
- * variables accordingly.
- *
- * @param current_pwd Pointer to a string that will hold the current working 
- * directory.
- * @param oldpwd_val Value of the OLDPWD environment variable before 
- * changing directories.
- * @param shell Pointer to the shell structure for managing environment 
- * variables.
- * @return Exit code (EXIT_SUCCESS on success, EXIT_FAILURE on error).
- */
 
-static int	update_env_vars(char **current_pwd, char *oldpwd_val,
-		t_shell *shell)
-{
-	int	result;
-
-	result = update_current_directory(current_pwd, shell);
-	if (result != EXIT_SUCCESS)
-		return (result);
-	update_env_vars_internal(*current_pwd, oldpwd_val, shell);
-	return (EXIT_SUCCESS);
-}
 
 /**
  * @brief Processes arguments for the cd command to determine the target
