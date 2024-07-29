@@ -3,35 +3,14 @@
 /*                                                        :::      ::::::::   */
 /*   ft_exit.c                                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: aarbenin <aarbenin@student.hive.fi>        +#+  +:+       +#+        */
+/*   By: ogoman <ogoman@student.hive.fi>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/25 09:49:18 by ogoman            #+#    #+#             */
-/*   Updated: 2024/07/25 15:04:52 by aarbenin         ###   ########.fr       */
+/*   Updated: 2024/07/25 16:09:39 by ogoman           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "minishell.h"
-
-/**
- * Skips leading whitespace and determines the sign of the number.
- *
- * @param str The input string.
- * @param sign Pointer to an integer where the sign will be stored.
- * @return The pointer to the first non-whitespace character in the string.
- */
-static const char	*skip_whitespace_and_sign(const char *str, int *sign)
-{
-	*sign = 1;
-	while (ft_isspace(*str))
-		str++;
-	if (*str == '-' || *str == '+')
-	{
-		if (*str == '-')
-			*sign = -1;
-		str++;
-	}
-	return (str);
-}
 
 /**
  * Checks if the entire string consists of digits.
@@ -87,24 +66,6 @@ static unsigned long long	custom_atoull(const char *str, int sign,
 	return (result);
 }
 
-/**
- * Handles exit errors by displaying an appropriate error message.
- *
- * @param error_code The error code to handle.
- * @param arg The argument causing the error.
- * @param shell The shell context.
- * @return The error status.
- */
-static int	handle_exit_errors(int error_code, char *arg, t_shell *shell)
-{
-	if (error_code == 1)
-		return (error_msg("exit: ", NULL, "too many arguments", shell));
-	else if (error_code == 2)
-		return (error_msg("exit: ", arg, ": numeric argument required", shell));
-	return (EXIT_FAILURE);
-}
-
-
 static int	check_numeric_argument(const char *arg, long long *num,
 			t_shell *shell, int *error_status)
 {
@@ -123,8 +84,8 @@ static int	check_numeric_argument(const char *arg, long long *num,
 	}
 	*num = custom_atoull(str, sign, &overflow);
 	free(trimmed_arg);
-	if (overflow || (*num == LLONG_MIN && sign != -1) ||
-		(*num == LLONG_MAX && sign != 1))
+	if (overflow || (*num == LLONG_MIN && sign != -1) || (*num == LLONG_MAX
+			&& sign != 1))
 	{
 		*error_status = 2;
 		return (handle_exit_errors(2, (char *)arg, shell));

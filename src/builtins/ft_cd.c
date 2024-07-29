@@ -1,3 +1,18 @@
+<<<<<<< HEAD
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   ft_cd.c                                            :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: ogoman <ogoman@student.hive.fi>            +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2024/07/25 15:56:59 by ogoman            #+#    #+#             */
+/*   Updated: 2024/07/25 16:03:36 by ogoman           ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
+=======
+>>>>>>> 1f1c6b8d78de1b72d22d0bb3cae09383bc70a7d3
 #include "minishell.h"
 
 /**
@@ -20,16 +35,20 @@ static void	update_env_var(t_list *ev, char *value, t_shell *shell)
 /**
  * @brief Updates the PWD and OLDPWD environment variables.
  *
- * This function updates the PWD and OLDPWD environment variables using
+ * This function updates the PWD and OLDPWD environment
+ * variables using
  * the current working directory. If the current directory is not accessible,
  * it handles the corresponding errors.
  *
- * @param current_pwd Pointer to the string containing the current working directory.
+ * @param current_pwd Pointer to the string containing the current
+ * working directory.
  * @param oldpwd_val The value of the OLDPWD environment variable.
  * @param shell Pointer to the shell structure.
  * @return EXIT_SUCCESS on success, EXIT_FAILURE on error.
  */
-static int	update_env_vars(char **current_pwd, char *oldpwd_val, t_shell *shell)
+
+static int	update_env_vars(char **current_pwd, char
+		*oldpwd_val, t_shell *shell)
 {
 	char	*buffer;
 
@@ -54,9 +73,6 @@ static int	update_env_vars(char **current_pwd, char *oldpwd_val, t_shell *shell)
 	update_env_var(get_ev("PWD", shell->ev_list), *current_pwd, shell);
 	return (EXIT_SUCCESS);
 }
-
-
-
 
 /**
  * @brief Processes arguments for the cd command to determine the target
