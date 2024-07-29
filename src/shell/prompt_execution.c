@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   prompt_execution.c                                 :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: ogoman <ogoman@student.hive.fi>            +#+  +:+       +#+        */
+/*   By: aarbenin <aarbenin@student.hive.fi>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/25 07:32:14 by ogoman            #+#    #+#             */
-/*   Updated: 2024/07/25 12:12:13 by ogoman           ###   ########.fr       */
+/*   Updated: 2024/07/29 07:24:59 by aarbenin         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -38,53 +38,30 @@ t_tkn_type	get_word(char *input, size_t *len, t_shell *shell)
 }
 
 /**
- * @brief Adds a token to the token list.
+ * @brief Tokenizes the input string and adds tokens to the list.
  *
- * This function creates a new token of the specified type and value,
- * then adds it to the end of the token list.
+ * This function processes the input string, identifies tokens, 
+ * and adds them
+ * to the provided token list. It handles spaces, token types, 
+ * and errors during tokenization.
  *
- * @param input The input string containing the token.
- * @param len The length of the token.
- * @param type The type of the token.
+ * @param input_str The input string to be tokenized.
  * @param tokens Pointer to the list of tokens.
  * @param shell Pointer to the shell structure.
  * @return EXIT_SUCCESS on success, EXIT_FAILURE on error.
- */
-static int	add_token(char *input, size_t len, t_tkn_type type,
-		t_list **tokens, t_shell *shell)
-{
-	t_tkn	*token;
-
-	token = create_token(type, input, len, shell);
-	if (!token)
-		return (EXIT_FAILURE);
-	lstadd_back_tracked(token, tokens, COMMAND_TRACK, shell);
-	return (EXIT_SUCCESS);
-}
-
-/**
- * @brief Tokenizes the input string into a list of tokens.
- *
- * This function processes the input string, identifies each token,
- * and adds it to the token list. It handles different types of tokens
- * including words, special characters, and quotes.
- *
- * @param input_str The input string to tokenize.
- * @param tokens Pointer to the list of tokens.
- * @param shell Pointer to the shell structure.
- * @return EXIT_SUCCESS on success, EXIT_FAILURE or syntax error code on error.
  */
 int	tokenize_input(char *input_str, t_list **tokens, t_shell *shell)
 {
 	size_t		i;
 	size_t		token_length;
 	t_tkn_type	token_type;
+	t_tkn		*token;
 
 	i = 0;
 	*tokens = NULL;
 	while (input_str[i])
 	{
-		while (is_space(input_str[i]))
+		while (ft_isspace(input_str[i]))
 			i++;
 		token_length = 0;
 		token_type = get_tkn_type(input_str + i, &token_length, shell);
@@ -92,13 +69,15 @@ int	tokenize_input(char *input_str, t_list **tokens, t_shell *shell)
 			token_type = get_word(input_str + i, &token_length, shell);
 		if (token_type == T_ERR)
 			return (display_synt_err(shell));
-		if (add_token(input_str + i, token_length, token_type, tokens,
-				shell) != EXIT_SUCCESS)
+		token = create_token(token_type, input_str + i, token_length, shell);
+		if (!token)
 			return (EXIT_FAILURE);
+		lstadd_back_tracked(token, tokens, COMMAND_TRACK, shell);
 		i += token_length;
 	}
 	return (EXIT_SUCCESS);
 }
+
 /**
  * @brief Creates a new token and allocates memory for it.
  *

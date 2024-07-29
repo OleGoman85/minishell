@@ -3,31 +3,14 @@
 /*                                                        :::      ::::::::   */
 /*   prompt_exec_sec.c                                  :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: ogoman <ogoman@student.hive.fi>            +#+  +:+       +#+        */
+/*   By: aarbenin <aarbenin@student.hive.fi>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/25 12:07:19 by ogoman            #+#    #+#             */
-/*   Updated: 2024/07/25 12:07:42 by ogoman           ###   ########.fr       */
+/*   Updated: 2024/07/29 07:21:31 by aarbenin         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "minishell.h"
-
-/**
- * @brief Checks if a character is a whitespace character.
- *
- * This function checks if the given character is a whitespace character 
- * including space, tab, vertical tab, newline, carriage return, or form feed.
- *
- * @param c The character to check.
- * @return 1 if the character is a whitespace character, otherwise 0.
- */
-int	is_space(int c)
-{
-	if (c == ' ' || c == '\t' || c == '\v' || c == '\n' || c == '\r'
-		|| c == '\f')
-		return (1);
-	return (0);
-}
 
 /**
  * @brief Checks if a character is a special shell token.

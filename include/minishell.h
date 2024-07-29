@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   minishell.h                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: ogoman <ogoman@student.hive.fi>            +#+  +:+       +#+        */
+/*   By: aarbenin <aarbenin@student.hive.fi>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/23 11:46:35 by ogoman            #+#    #+#             */
-/*   Updated: 2024/07/25 13:03:10 by ogoman           ###   ########.fr       */
+/*   Updated: 2024/07/29 07:19:59 by aarbenin         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -109,7 +109,6 @@ int			main(int argc, char **argv, char **envp);
 int			display_ev_list(bool export_mode, t_list *ev, t_shell *shell);
 int			error_msg_errno(char *cause, t_shell *shell);
 int			error_msg(char *cause, char *faulty_el, char *msg, t_shell *shell);
-int			is_space(int c);
 int			is_special_tkn(int c);
 int			display_synt_err(t_shell *shell);
 int			tokenize_input(char *input_str, t_list **tokens, t_shell *shell);
