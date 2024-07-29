@@ -1,12 +1,12 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   prompt_exec_therd.c                                :+:      :+:    :+:   */
+/*   prompt_exec_third.c                                :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: ogoman <ogoman@student.hive.fi>            +#+  +:+       +#+        */
+/*   By: aarbenin <aarbenin@student.hive.fi>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/25 12:09:45 by ogoman            #+#    #+#             */
-/*   Updated: 2024/07/25 15:03:24 by ogoman           ###   ########.fr       */
+/*   Updated: 2024/07/29 07:18:31 by aarbenin         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -135,7 +135,7 @@ void	handle_quotes_and_escapes(char *input, size_t *len,
 			else if (*in_quote && input[*len] == *c)
 				*in_quote = false;
 		}
-		else if ((is_special_tkn(input[*len]) || is_space(input[*len]))
+		else if ((is_special_tkn(input[*len]) || ft_isspace(input[*len]))
 			&& !*in_quote)
 			break ;
 		*len += 1;

@@ -16,9 +16,6 @@ LIBFT = $(LIBFT_DIR)/libft.a
 READLINE_DIR = /opt/homebrew/opt/readline
 READLINE_LIB = -L$(READLINE_DIR)/lib -lreadline
 
-# READLINE_DIR = $(HOME)/.brew/opt/readline
-# READLINE_LIB = -L$(READLINE_DIR)/lib -lreadline
-
 INC_DIRS = include $(LIBFT_DIR) $(READLINE_DIR)/include
 CFLAGS += $(addprefix -I, $(INC_DIRS))
 LDFLAGS = -L$(LIBFT_DIR) -lft $(READLINE_LIB)
